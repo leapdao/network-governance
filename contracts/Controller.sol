@@ -1,9 +1,13 @@
 pragma solidity ^0.4.11;
 
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import "./ERC20.sol";
 import "./ERC223ReceivingContract.sol";
+import "./Pausable.sol";
 
-contract Controller is ERC20 {
+contract Controller is ERC20, Pausable {
+  using SafeMath for uint;
+
   address public parsecAddr;
   uint256 internal total_supply;
   mapping(address => uint256) internal balances;
