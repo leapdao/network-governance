@@ -1,6 +1,7 @@
 pragma solidity ^0.4.11;
 
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
+import "./Parsec.sol";
 import "./ERC20.sol";
 import "./ERC223ReceivingContract.sol";
 import "./Pausable.sol";
@@ -16,6 +17,20 @@ contract Controller is ERC20, Pausable {
   function Controller(address _parsecAddr) public
   {
     parsecAddr = _parsecAddr;
+  }
+
+  function setContract(address _parsecAddr) public {
+    parsecAddr = _parsecAddr;
+  }
+
+  function kill(address _newController) public {
+    if (parsecAddr != address(0)) { Ownable(parsecAddr).transferOwnership(msg.sender); }
+    selfdestruct(_newController);
+  }
+
+  function assignTokens(address _to, uint amount) public {
+    balances[_to] = balances[_to].add(amount);
+    total_supply = total_supply.add(amount);
   }
 
   // ############################################
