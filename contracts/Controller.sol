@@ -112,8 +112,4 @@ contract Controller is ERC20, Pausable {
       untrustedReceiver.tokenFallback(_from, _value, _data);
     }
   }
-
-  function _triggerParsecEvent(string eventName, string key, address from, address to, uint256 amount, uint256 value, bool status, bytes data) internal {
-    Parsec(parsecAddr).eventCallback(eventName, key, from, to, amount, value, status, data);
-  }
 }
