@@ -37,11 +37,11 @@ contract Controller is ERC20, Pausable {
   // ########### PARSEC FUNCTIONS  ##############
   // ############################################
 
-  function name() public constant returns (string) {
+  function name() public constant returns (bytes32) {
     return "ParSeC token";
   }
 
-  function symbol() public constant returns (string) {
+  function symbol() public constant returns (bytes32) {
     return "PSC";
   }
 
