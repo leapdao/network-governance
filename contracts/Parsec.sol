@@ -9,10 +9,6 @@ import "./DelegateProxy.sol";
  */
 contract Parsec is Ownable, DelegateProxy {
 
-  uint256 internal total_supply;
-  mapping(address => uint256) internal balances;
-  mapping (address => mapping (address => uint)) internal allowed;
-
   event Log(string eventName, string key, address indexed from, address indexed to, uint256 amount, uint256 value, bool status, bytes data);
 
   // onlyOWner function
