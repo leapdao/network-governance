@@ -1,4 +1,4 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.18;
 
 import "./DelegateProxy.sol";
 import "./Delegatable.sol";
@@ -7,10 +7,7 @@ import "./Delegatable.sol";
 /**
  * Based of the zeppelin token contract.
  */
-contract Parsec is DelegateProxy, Delegatable {
-
-  mapping(address => uint256) balances;
-  uint256 totalSupply_ = 0;
+contract Parsec is Delegatable, DelegateProxy {
 
   // fallback function
   function () public {
