@@ -19,6 +19,7 @@ contract Controller is ERC827Token, MintableToken, PausableToken {
    */
   function initialize(address _controller, uint256 _cap) onlyOwner public {
     require(cap == 0);
+    require(_cap > 0);
     require(thisAddr == _controller);
     cap = _cap;
     totalSupply_ = 0;

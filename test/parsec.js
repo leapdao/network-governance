@@ -13,7 +13,7 @@ contract('Parsec', (accounts) => {
     parsec = Controller.at(parsecProxy.address);
   });
 
-  it('it should be initialized properly', async () => {
+  it('should be initializable through proxy', async () => {
     // initialize contract
     await parsec.initialize(controller.address, 400000000);
     // check total supply
@@ -28,6 +28,16 @@ contract('Parsec', (accounts) => {
     // check wiring to proxy
     let addr = await parsec.thisAddr();
     assert.equal(addr, controller.address);
+  });
+
+  it('should not be initializable without proxy', async () => {
+    // try to call initialize() without delegatecall
+    try {
+      await controller.initialize(controller.address, 400000000);
+      assert.fail('should have thrown before');
+    } catch (error) {
+      assertJump(error);
+    }
   });
 
   it('should mint a given amount of tokens to a given address', async function () {
