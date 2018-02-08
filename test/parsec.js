@@ -1,5 +1,6 @@
 const Parsec = artifacts.require('./Parsec.sol');
 const Controller = artifacts.require('./Controller.sol');
+import assertJump from './helpers/assertJump';
 
 contract('Parsec', (accounts) => {
   let parsec;
@@ -62,4 +63,42 @@ contract('Parsec', (accounts) => {
     totalSupply = await parsec.totalSupply();
     assert.equal(totalSupply.toNumber(), 200);
   });
+
+  it('changes owner after transfer', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+
+    let other = accounts[1];
+    await parsec.transferOwnership(other);
+    let owner = await parsec.owner();
+
+    assert.isTrue(owner === other);
+  });
+
+  it('should prevent non-owners from transfering', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    const other = accounts[2];
+    const owner = await parsec.owner.call();
+    assert.isTrue(owner !== other);
+    try {
+      await parsec.transferOwnership(other, { from: other });
+      assert.fail('should have thrown before');
+    } catch (error) {
+      assertJump(error);
+    }
+  });
+
+  it('should guard ownership against stuck state', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    let originalOwner = await parsec.owner();
+    try {
+      await parsec.transferOwnership(null, { from: originalOwner });
+      assert.fail('should have thrown before');
+    } catch (error) {
+      assertJump(error);
+    }
+  });
+
 });
