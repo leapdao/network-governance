@@ -10,9 +10,8 @@ contract('Parsec', (accounts) => {
   before(async () => {
     parsecProxy = await Parsec.new();
     controller = await Controller.new();
-    await parsecProxy.transferDelegation(controller.address);
     parsec = Controller.at(parsecProxy.address);
-    await parsec.initialize(400000000);
+    await parsec.initialize(controller.address, 400000000);
   });
 
   it('it should delegate call to controller to read data', async () => {

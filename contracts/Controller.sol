@@ -4,22 +4,19 @@ import "zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
 
 contract Controller is ERC827Token, MintableToken {
-
+  address thisAddr; // matches delegation slot in proxy
   string public name;
   string public symbol;
   uint8 public decimals;
   uint256 public cap;
 
-  event Debug(uint256 cap);
-
-  function initialize(uint256 _cap) public {
+  function initialize(address _controller, uint256 _cap) onlyOwner public {
     require(cap == 0);
     cap = _cap;
-  	name = "Parsec Labs"; // solium-disable-line uppercase
-  	symbol = "PSC"; // solium-disable-line uppercase
-  	decimals = 18; // solium-disable-line uppercase
+  	name = "Parsec Labs";
+  	symbol = "PSC";
+  	decimals = 18;
     totalSupply_ = 1;
-    owner = msg.sender;
     balances[msg.sender] = 1;
   }
 
