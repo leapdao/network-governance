@@ -2,15 +2,20 @@ pragma solidity ^0.4.18;
 
 import "zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
 import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 
-contract Controller is ERC827Token, MintableToken {
+contract Controller is ERC827Token, MintableToken, PausableToken {
   address public thisAddr; // matches delegation slot in proxy
-  uint256 public cap;
+  uint256 public cap;      // the max cap of this token
   string public constant name = "Parsec Labs"; // solium-disable-line uppercase
   string public constant symbol = "PSC"; // solium-disable-line uppercase
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
-
+  /**
+   * @dev Function to initialize storage
+   * @param _controller The address where code is loaded from through delegatecall
+   * @param _cap The cap that should be set for the token
+   */
   function initialize(address _controller, uint256 _cap) onlyOwner public {
     require(cap == 0);
     require(thisAddr == _controller);

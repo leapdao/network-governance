@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 /**
  * @title Delegatable
+ * ownable contract extended by one more variable
  */
 contract Delegatable {
   address empty1; // unknown slot

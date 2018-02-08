@@ -5,7 +5,7 @@ import "./Delegatable.sol";
 
 
 /**
- * Based of the zeppelin token contract.
+ * Basic proxy implementation to controller
  */
 contract Parsec is Delegatable, DelegateProxy {
 
