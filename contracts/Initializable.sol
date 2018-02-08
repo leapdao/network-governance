@@ -13,6 +13,6 @@ contract Initializable {
   }
 
   function initialize() public {
-    initializationBlock = 100;//getBlockNumber();
+    initializationBlock = getBlockNumber();
   }
 }

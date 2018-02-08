@@ -9,6 +9,9 @@ import "./Delegatable.sol";
  */
 contract Parsec is DelegateProxy, Delegatable {
 
+  mapping(address => uint256) balances;
+  uint256 totalSupply_ = 0;
+
   // fallback function
   function () public {
     delegatedFwd(delegation, msg.data);
