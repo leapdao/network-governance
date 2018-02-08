@@ -9,8 +9,14 @@ import "./DelegateProxy.sol";
  */
 contract Parsec is Ownable, DelegateProxy {
 
+  address public controllerAddr;
+
+  function setController(address _controllerAddr) public onlyOwner {
+    controllerAddr = _controllerAddr;
+  }
+
   // fallback function
   function () public payable {
-    delegatedFwd(owner, msg.data);
+    delegatedFwd(controllerAddr, msg.data);
   }
 }
