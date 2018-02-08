@@ -18,24 +18,24 @@ contract('Parsec', (accounts) => {
     let del = await parsecProxy.delegation();
     assert.equal(del, controller.address);
 
-    let balance0 = await parsec.balanceOf(accounts[0]);
-    assert.equal(balance0.toNumber(), 1);
+    let addr = await parsec.thisAddr();
+    assert.equal(addr, controller.address);
     
     let cap = await parsec.cap();
     assert.equal(cap.toNumber(), 400000000);
   });
 
-  it('should start with a totalSupply of 1', async function () {
+  it('should start with a totalSupply of 0', async function () {
     let totalSupply = await parsec.totalSupply();
-    assert.equal(totalSupply.toNumber(), 1);
+    assert.equal(totalSupply.toNumber(), 0);
   });
 
   it('should mint a given amount of tokens to a given address', async function () {
     const result = await parsec.mint(accounts[0], 100);
     let balance0 = await parsec.balanceOf(accounts[0]);
-    assert.equal(balance0.toNumber(), 101);
+    assert.equal(balance0.toNumber(), 100);
     let totalSupply = await parsec.totalSupply();
-    assert.equal(totalSupply.toNumber(), 101);
+    assert.equal(totalSupply.toNumber(), 100);
   });
 
 });

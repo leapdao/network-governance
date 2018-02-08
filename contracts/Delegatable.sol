@@ -6,8 +6,8 @@ pragma solidity ^0.4.18;
 contract Delegatable {
   address empty1; // unknown slot
   address empty2; // unknown slot
-  address empt3;  // unknown slot
-  address public owner;  // matches ower slot in controller
+  address empty3;  // unknown slot
+  address public owner;  // matches owner slot in controller
   address public delegation; // matches thisAddr slot in controller
 
   event DelegationTransferred(address indexed previousDelegate, address indexed newDelegation);
