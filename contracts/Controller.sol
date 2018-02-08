@@ -13,7 +13,7 @@ contract Controller is ERC827Token, MintableToken, PausableToken {
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
   /**
-   * @dev Function to initialize storage
+   * @dev Function to initialize storage, only callable from proxy.
    * @param _controller The address where code is loaded from through delegatecall
    * @param _cap The cap that should be set for the token
    */
