@@ -9,6 +9,12 @@ import "./Delegatable.sol";
  */
 contract Parsec is Delegatable, DelegateProxy {
 
+  address public controllerAddr;
+
+  function setController(address _controllerAddr) public onlyOwner {
+    controllerAddr = _controllerAddr;
+  }
+
   // fallback function
   function () public {
     delegatedFwd(delegation, msg.data);

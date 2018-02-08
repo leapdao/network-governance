@@ -1,3 +1,4 @@
+
 pragma solidity ^0.4.18;
 
 import "zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
@@ -34,5 +35,4 @@ contract Controller is ERC827Token, MintableToken, PausableToken {
     require(totalSupply_.add(_amount) <= cap);
     return super.mint(_to, _amount);
   }
-
 }
