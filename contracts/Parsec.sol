@@ -1,16 +1,15 @@
 pragma solidity ^0.4.11;
 
-
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import "./DelegateProxy.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * Based of the zeppelin token contract.
  */
-contract Parsec is Ownable, DelegateProxy {
+contract Parsec is DelegateProxy, Ownable {
 
   // fallback function
-  function () public payable {
+  function () public {
     delegatedFwd(owner, msg.data);
   }
 }
