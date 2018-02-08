@@ -5,9 +5,15 @@ import "./Delegatable.sol";
 
 
 /**
- * Based of the zeppelin token contract.
+ * Proxy to token contract with permanent address.
  */
 contract Parsec is Delegatable, DelegateProxy {
+
+  address public controllerAddr;
+
+  function setController(address _controllerAddr) public onlyOwner {
+    controllerAddr = _controllerAddr;
+  }
 
   // fallback function
   function () public {
