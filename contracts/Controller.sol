@@ -1,34 +1,24 @@
 pragma solidity ^0.4.11;
 
 import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import 'zeppelin-solidity/contracts/lifecycle/Pausable.sol';
 import "./Parsec.sol";
+import "./Pausable.sol";
 import "./ERC20.sol";
 import "./ERC223ReceivingContract.sol";
 
 
-contract Controller is ERC20, Pausable {
+contract Controller is Pausable, ERC20 {
   using SafeMath for uint;
 
-  address public parsecAddr;
   uint256 internal total_supply;
   mapping(address => uint256) internal balances;
   mapping (address => mapping (address => uint)) internal allowed;
 
-  function Controller(address _parsecAddr) public
-  {
-    parsecAddr = _parsecAddr;
-  }
-
-  function setContract(address _parsecAddr) public onlyOwner whenPaused {
-    parsecAddr = _parsecAddr;
-  }
-
-  function kill(address _newController) public onlyOwner whenPaused {
+  function kill(address _newController) public onlyAddress('owner') {
     selfdestruct(_newController);
   }
 
-  function assignTokens(address _to, uint amount) public onlyOwner {
+  function assignTokens(address _to, uint amount) public onlyAddress('owner') whenNotPaused {
     balances[_to] = balances[_to].add(amount);
     total_supply = total_supply.add(amount);
   }
