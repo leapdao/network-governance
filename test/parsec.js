@@ -1,6 +1,6 @@
 const Parsec = artifacts.require('./Parsec.sol');
 const Controller = artifacts.require('./Controller.sol');
-import assertJump from './helpers/assertJump';
+const { assertRevert } = require('./helpers/assertThrow')
 
 contract('Parsec', (accounts) => {
   let parsec;
@@ -32,12 +32,9 @@ contract('Parsec', (accounts) => {
 
   it('should not be initializable without proxy', async () => {
     // try to call initialize() without delegatecall
-    try {
-      await controller.initialize(controller.address, 400000000);
-      assert.fail('should have thrown before');
-    } catch (error) {
-      assertJump(error);
-    }
+    return assertRevert(async () => {
+        await controller.initialize(controller.address, 400000000);
+    });
   });
 
   it('should mint a given amount of tokens to a given address', async function () {
@@ -91,24 +88,24 @@ contract('Parsec', (accounts) => {
     const other = accounts[2];
     const owner = await parsec.owner.call();
     assert.isTrue(owner !== other);
-    try {
-      await parsec.transferOwnership(other, { from: other });
-      assert.fail('should have thrown before');
-    } catch (error) {
-      assertJump(error);
-    }
+    return assertRevert(async () => {
+        await parsec.transferOwnership(other, { from: other });
+    });
   });
 
   it('should guard ownership against stuck state', async function () {
     // initialize contract
     await parsec.initialize(controller.address, 200);
     let originalOwner = await parsec.owner();
-    try {
-      await parsec.transferOwnership(null, { from: originalOwner });
-      assert.fail('should have thrown before');
-    } catch (error) {
-      assertJump(error);
-    }
+    return assertRevert(async () => {
+        await parsec.transferOwnership(null, { from: originalOwner });
+    });
+  });
+
+  it('should allow to read string', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    assert.equal(await parsec.name(), 'Parsec Labs');
   });
 
 });

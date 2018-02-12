@@ -3,7 +3,8 @@
   "license": "MIT",
   "main": "truffle.js",
   "scripts": {
-    "test": "scripts/test.sh"
+    "test": "npm run ganache-cli:dev && truffle test --network rpc",
+    "ganache-cli:dev": "scripts/ganache-cli.sh"
   },
   "devDependencies": {
     "babel-polyfill": "^6.23.0",
@@ -11,7 +12,8 @@
     "babel-preset-stage-2": "^6.18.0",
     "babel-preset-stage-3": "^6.17.0",
     "babel-register": "^6.23.0",
-    "ethereumjs-testrpc": "^4.0.1",
+    "ganache-cli": "^6.0.3",
+    "solium": "^1.1.2",
     "truffle": "4.0.6"
   },
   "dependencies": {
