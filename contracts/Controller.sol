@@ -5,9 +5,9 @@ import "./CappedToken.sol";
 
 contract Controller is CappedToken {
 
-  string public name = "ParSeC token";
-  string public symbol = "PSC";
-  uint8 public decimals = 12;
+  string public constant name = "ParSeC token";
+  string public constant symbol = "PSC";
+  uint8 public constant decimals = 12;
 
   function Controller(uint256 _cap) public
     CappedToken(_cap)
