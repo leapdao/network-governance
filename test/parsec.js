@@ -18,6 +18,11 @@ contract('Test', (accounts) => {
     await proxy.mint(Founder, 4000000000);
   });
 
+  it('should display name and symbol properly', async () => {
+    assert.equal(await proxy.name.call(), "ParSeC token");
+    assert.equal(await proxy.symbol.call(), "PSC");
+  });
+
   it('should delegate call to controller to read balance data', async () => {
     assert.equal((await proxy.balanceOf(Founder)).toNumber(), 4000000000);
     assert.equal((await proxy.totalSupply()).toNumber(), 4000000000);

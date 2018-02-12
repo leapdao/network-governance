@@ -9,6 +9,14 @@ import "./DelegateProxy.sol";
  */
 contract Parsec is Storage, DelegateProxy {
 
+  function name() public constant returns (string) {
+    return "ParSeC token";
+  }
+
+  function symbol() public constant returns (string) {
+    return "PSC";
+  }
+
   // fallback function
   function () public payable {
     delegatedFwd(addresses['controller'], msg.data);
