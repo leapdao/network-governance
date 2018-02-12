@@ -9,8 +9,14 @@ contract MockController is Controller {
   string public symbol = "PSC";
   uint8 public decimals = 12;
 
+  function MockController(uint256 _cap) public
+    Controller(_cap)
+  {
+
+  }
+
   function checkAddress(bytes32 key) public view returns (address) {
-    return crate[key];
+    return addresses[key];
   }
 
 }
