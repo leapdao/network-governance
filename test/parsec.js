@@ -1,4 +1,3 @@
-const Controller = artifacts.require('./helpers/MockController.sol');
 const Parsec = artifacts.require('./Parsec.sol');
 const Controller = artifacts.require('./Controller.sol');
 const { assertRevert } = require('./helpers/assertThrow')
