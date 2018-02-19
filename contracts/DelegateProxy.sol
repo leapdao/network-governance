@@ -10,9 +10,16 @@ contract DelegateProxy {
     */
     function delegatedFwd(address _dst, bytes _calldata) internal {
         assembly {
-            let returnSize := 32
-            let retVal := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, returnSize)
-            switch retVal case 0 { revert(0,0) } default { return(0, returnSize) }
+            let result := delegatecall(sub(gas, 10000), _dst, add(_calldata, 0x20), mload(_calldata), 0, 0)
+            let size := returndatasize
+
+            let ptr := mload(0x40)
+            returndatacopy(ptr, 0, size)
+
+            // revert instead of invalid() bc if the underlying call failed with invalid() it already wasted gas.
+            // if the call returned error data, forward it
+            switch result case 0 { revert(ptr, size) }
+            default { return(ptr, size) }
         }
     }
 }

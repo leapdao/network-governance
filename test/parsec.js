@@ -1,109 +1,111 @@
 const Controller = artifacts.require('./helpers/MockController.sol');
 const Parsec = artifacts.require('./Parsec.sol');
-const Founder = web3.eth.accounts[0];
-const Investor = web3.eth.accounts[1];
-const assertJump = require("./helpers/assertJump");
+const Controller = artifacts.require('./Controller.sol');
+const { assertRevert } = require('./helpers/assertThrow')
 
-contract('Test', (accounts) => {
-  let proxy;
-  let proxyInstance;
+contract('Parsec', (accounts) => {
+  let parsec;
+  let parsecProxy;
   let controller;
 
-  before(async () => {
-    controller = await Controller.new(100000e18);
-    proxyInstance = await Parsec.new();
-    await proxyInstance.setKeyHolder('controller', controller.address);
-    proxy = Controller.at(proxyInstance.address);
-    await proxy.initialize(100000e18);
-    await proxy.mint(Founder, 4000000000);
+  beforeEach(async () => {
+    parsecProxy = await Parsec.new();
+    controller = await Controller.new();
+    parsec = Controller.at(parsecProxy.address);
   });
 
-  it('should display name and symbol properly', async () => {
-    assert.equal(await proxy.name.call(), "ParSeC token");
-    assert.equal(await proxy.symbol.call(), "PSC");
+  it('should be initializable through proxy', async () => {
+    // initialize contract
+    await parsec.initialize(controller.address, 400000000);
+    // check total supply
+    let totalSupply = await parsec.totalSupply();
+    assert.equal(totalSupply.toNumber(), 0);
+    // check cap
+    let cap = await parsec.cap();
+    assert.equal(cap.toNumber(), 400000000);
+    // check wiring to proxy
+    let del = await parsecProxy.delegation();
+    assert.equal(del, controller.address);
+    // check wiring to proxy
+    let addr = await parsec.thisAddr();
+    assert.equal(addr, controller.address);
   });
 
-  it('should delegate call to controller to read balance data', async () => {
-    assert.equal((await proxy.balanceOf(Founder)).toNumber(), 4000000000);
-    assert.equal((await proxy.totalSupply()).toNumber(), 4000000000);
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+  it('should not be initializable without proxy', async () => {
+    // try to call initialize() without delegatecall
+    return assertRevert(async () => {
+        await controller.initialize(controller.address, 400000000);
+    });
   });
 
-  it('should delegate call to controller and allow transfer', async () => {
-    await proxy.transfer(Investor, 2000000000)
-    assert.equal((await proxy.balanceOf(Investor)).toNumber(), 2000000000);
-    assert.equal((await proxy.totalSupply()).toNumber(), 4000000000);
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+  it('should mint a given amount of tokens to a given address', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 100);
+    // mint some tokens
+    const result = await parsec.mint(accounts[0], 100);
+    // validate balance
+    let balance0 = await parsec.balanceOf(accounts[0]);
+    assert.equal(balance0.toNumber(), 100);
+    // validate supply
+    let totalSupply = await parsec.totalSupply();
+    assert.equal(totalSupply.toNumber(), 100);
   });
 
-  it('should delegate call to controller and allow approve plus transferFrom', async () => {
-    await proxy.approve(Investor, 2000000000);
-    assert.equal((await proxy.allowance.call(Founder, Investor)).toNumber(), 2000000000)
-
-    await proxy.transferFrom(Founder, Investor, 2000000000, {from: Investor});
-    assert.equal((await proxy.balanceOf(Investor)).toNumber(), 4000000000);
-    assert.equal((await proxy.totalSupply()).toNumber(), 4000000000);
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+  it('should allow to update controller', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    // mint some tokens
+    let result = await parsec.mint(accounts[0], 100);
+    // validate supply
+    let totalSupply = await parsec.totalSupply();
+    assert.equal(totalSupply.toNumber(), 100);
+    // deploy new controller
+    let newController = await Controller.new();
+    await parsecProxy.transferDelegation(newController.address);
+    // check wiring
+    let delegation = await parsecProxy.delegation();
+    assert.equal(delegation, newController.address);
+    // mint some more tokens on top
+    result = await parsec.mint(accounts[0], 100);
+    // validate supply
+    totalSupply = await parsec.totalSupply();
+    assert.equal(totalSupply.toNumber(), 200);
   });
 
-  it('should allow to change controller and retain data', async () => {
-    await proxy.mint(Founder, 4000000000);
-    await proxy.approve(Investor, 2000000000);
-    await proxy.transferFrom(Founder, Investor, 2000000000, {from: Investor});
+  it('changes owner after transfer', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
 
-    // change controller and set
-    const controllerNew = await Controller.new(100000e18);
-    await proxyInstance.setKeyHolder('controller', controllerNew.address);
+    let other = accounts[1];
+    await parsec.transferOwnership(other);
+    let owner = await parsec.owner();
 
-    controller = controllerNew;
-    assert.equal((await proxy.balanceOf(Investor)).toNumber(), 6000000000);
-    assert.equal((await proxy.totalSupply()).toNumber(), 8000000000);
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+    assert.isTrue(owner === other);
   });
 
-  it('should not allow to set controller by non owner', async () => {
-    const controllerNew = await Controller.new(100000e18);
-    try {
-      await proxyInstance.setKeyHolder('controller', controllerNew.address, {from: Investor});
-      assert.fail("should have failed before")
-    } catch(error) {
-      assertJump(error);
-    }
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+  it('should prevent non-owners from transfering', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    const other = accounts[2];
+    const owner = await parsec.owner.call();
+    assert.isTrue(owner !== other);
+    return assertRevert(async () => {
+        await parsec.transferOwnership(other, { from: other });
+    });
   });
 
-  it('should delegate call to controller and allow transfer with data', async () => {
-    await proxy.transferData(Investor, 2000000000, "");
-    assert.equal((await proxy.balanceOf(Investor)).toNumber(), 8000000000);
-    assert.equal((await proxy.totalSupply()).toNumber(), 8000000000);
-    assert.equal(await proxyInstance.addresses.call('controller'), controller.address)
-    assert.equal(await proxyInstance.addresses.call('owner'), accounts[0])
-    assert.equal(await proxy.checkAddress.call('controller'), controller.address)
-    assert.equal(await proxy.checkAddress.call('owner'), accounts[0])
+  it('should guard ownership against stuck state', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    let originalOwner = await parsec.owner();
+    return assertRevert(async () => {
+        await parsec.transferOwnership(null, { from: originalOwner });
+    });
   });
 
-  it('should not allow to mint tokens more than cap', async () => {
-    try {
-      await proxy.mint(Founder, (100001e18 - 8000000000));
-      assert.fail('should have failed before');
-    } catch (error) {
-      assert.equal((await proxy.totalSupply.call()).toNumber(), 8000000000);
-    }
+  it('should allow to read string', async function () {
+    // initialize contract
+    await parsec.initialize(controller.address, 200);
+    assert.equal(await parsec.name(), 'Parsec Labs');
   });
-
 });
