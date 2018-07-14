@@ -19,9 +19,8 @@ contract Parsec is Delegatable, DelegateProxy {
   /**
    * @dev Function to initialize storage of proxy
    * @param _controller The address of the controller to load the code from
-   * @param _cap Max amount of tokens that should be mintable
    */
-  function initialize(address _controller, uint256 _cap) public {
+  function initialize(address _controller, uint256) public {
     require(owner == 0);
     owner = msg.sender;
     delegation = _controller;

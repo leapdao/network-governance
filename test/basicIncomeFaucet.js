@@ -26,43 +26,51 @@ contract('BasicIncomeFaucet', (accounts) => {
   });
 
   it('should allow to mint basic income nft and claim tokens', async () => {
-    const event = await nft.mint(alice, 4).should.be.fulfilled;
-    const nftId = event.logs[0].args._tokenId;
-    const bal1 = await token.balanceOf(alice);
-    await faucet.claim(nftId, {from: alice}).should.be.fulfilled;
-    const bal2 = await token.balanceOf(alice);
-    assert(bal2.toNumber() > bal1.toNumber());
+    // no faucet balance before basic income
+    let available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 0);
+    await nft.mint(alice, 4).should.be.fulfilled;
+    // balance visible after token minting
+    available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 300000000000);
+    // claim faucet balance
+    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+    const bal = await token.balanceOf(alice);
+    assert.equal(bal.toNumber(), available.toNumber());
+    // balance 0 after claim
+    available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 0);
   });
 
   it('should cap at 8 tacos', async () => {
-    const event = await nft.mint(alice, 9).should.be.fulfilled;
-    const nftId = event.logs[0].args._tokenId;
-    await faucet.claim(nftId, {from: alice}).should.be.fulfilled;
+    await nft.mint(alice, 9).should.be.fulfilled;
+    const available = await faucet.balanceOf(alice);
+    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
   });
 
   it('should prevent to claim less than 4 tacos', async () => {
-    const event = await nft.mint(alice, 3).should.be.fulfilled;
-    const nftId = event.logs[0].args._tokenId;
-    await faucet.claim(nftId, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await nft.mint(alice, 3).should.be.fulfilled;
+    const available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 0);
+    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 
   it('should prevent double claim with same nft', async () => {
-    const event = await nft.mint(alice, 4).should.be.fulfilled;
-    const nftId = event.logs[0].args._tokenId;
+    await nft.mint(alice, 4).should.be.fulfilled;
+    const available = await faucet.balanceOf(alice);
     // first try
-    await faucet.claim(nftId, {from: alice}).should.be.fulfilled;
+    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
     // second try
-    await faucet.claim(nftId, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 
   it('should prevent double claim with different nft within short time', async () => {
     let event = await nft.mint(alice, 4).should.be.fulfilled;
-    const nftId = event.logs[0].args._tokenId;
+    const available = await faucet.balanceOf(alice);
     // first try
-    await faucet.claim(nftId, {from: alice}).should.be.fulfilled;
-    event = await nft.mint(alice, 5).should.be.fulfilled;
-    const otherNftId = event.logs[0].args._tokenId;
+    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
     // second try
-    await faucet.claim(otherNftId, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await nft.mint(alice, 5).should.be.fulfilled;
+    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 });
