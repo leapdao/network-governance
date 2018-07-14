@@ -1,9 +1,8 @@
+pragma solidity ^0.4.24;
 
-pragma solidity ^0.4.18;
-
-import "zeppelin-solidity/contracts/token/ERC827/ERC827Token.sol";
-import "zeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
-import "zeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
+import "./ERC827Token.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/MintableToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 
 contract Controller is ERC827Token, MintableToken, PausableToken {
   address public thisAddr; // matches delegation slot in proxy

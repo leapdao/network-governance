@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.24;
 
 /**
  * @title Delegatable
@@ -25,7 +25,7 @@ contract Delegatable {
    */
   function transferDelegation(address newDelegation) public onlyOwner {
     require(newDelegation != address(0));
-    DelegationTransferred(delegation, newDelegation);
+    emit DelegationTransferred(delegation, newDelegation);
     delegation = newDelegation;
   }
 
@@ -35,7 +35,7 @@ contract Delegatable {
    */
   function transferOwnership(address newOwner) public onlyOwner {
     require(newOwner != address(0));
-    OwnershipTransferred(owner, newOwner);
+    emit OwnershipTransferred(owner, newOwner);
     owner = newOwner;
   }
 

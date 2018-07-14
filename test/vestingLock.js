@@ -3,7 +3,7 @@ const Parsec = artifacts.require('./Parsec.sol');
 const Controller = artifacts.require('./Controller.sol');
 const { assertRevert } = require('./helpers/assertThrow')
 
-contract('Parsec', (accounts) => {
+contract('VestingLock', (accounts) => {
   let parsec;
   let parsecProxy;
   let controller;

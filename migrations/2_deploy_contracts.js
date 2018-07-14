@@ -14,5 +14,4 @@ module.exports = async function(deployer) {
   await parsec.initialize(controller.address, 400000000);
   // check result
   let cap = await parsec.cap();
-  console.log(cap.toNumber());
 };
