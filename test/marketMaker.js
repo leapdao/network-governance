@@ -45,9 +45,9 @@ contract('MarketMaker', (accounts) => {
 
   it('should allow to sell tokens for dai with quadratic price increase', async () => {
     await nft.mint(alice, 4).should.be.fulfilled;
-    await market.transfer(alice, base * 4, {from: alice}).should.be.fulfilled;
+    await market.transfer(alice, base * 4.5, {from: alice}).should.be.fulfilled;
     const bal = await dai.balanceOf(alice);
-    assert.equal(bal.toNumber(), minDaiPayment * 2);
+    assert.equal(bal.toNumber(), 42426406871);
   });
 
   it('should allow to sell max amount of tokens for dai', async () => {
