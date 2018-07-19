@@ -1,7 +1,7 @@
 import chai from 'chai';
 import EVMRevert from './helpers/EVMRevert';
 const BasicIncomeFaucet = artifacts.require('./BasicIncomeFaucet.sol');
-const ERC721BasicToken = artifacts.require('./TacoIncomeToken.sol');
+const TacoIncomeToken = artifacts.require('./TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
 const { assertRevert } = require('./helpers/assertThrow')
 
@@ -17,7 +17,7 @@ contract('BasicIncomeFaucet', (accounts) => {
   const alice = accounts[1];
 
   beforeEach(async () => {
-    nft = await ERC721BasicToken.new().should.be.fulfilled;
+    nft = await TacoIncomeToken.new().should.be.fulfilled;
     token = await SimpleToken.new().should.be.fulfilled;
     const tokensPerTaco = 750 * 100000000;
     faucet = await BasicIncomeFaucet.new(token.address, nft.address, council, tokensPerTaco).should.be.fulfilled;

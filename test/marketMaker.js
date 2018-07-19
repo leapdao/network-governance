@@ -1,7 +1,7 @@
 import chai from 'chai';
 import EVMRevert from './helpers/EVMRevert';
 const MarketMaker = artifacts.require('./MarketMaker.sol');
-const ERC721BasicToken = artifacts.require('./TacoIncomeToken.sol');
+const TacoIncomeToken = artifacts.require('./TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
 const { assertRevert } = require('./helpers/assertThrow')
 
@@ -20,7 +20,7 @@ contract('MarketMaker', (accounts) => {
   const alice = accounts[1];
 
   beforeEach(async () => {
-    nft = await ERC721BasicToken.new().should.be.fulfilled;
+    nft = await TacoIncomeToken.new().should.be.fulfilled;
     token = await SimpleToken.new({from: alice}).should.be.fulfilled;
     dai = await SimpleToken.new().should.be.fulfilled;
     market = await MarketMaker.new(token.address, dai.address, nft.address, council, base).should.be.fulfilled;
