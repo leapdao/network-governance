@@ -21,6 +21,6 @@
   },
   "dependencies": {
     "bignumber.js": "^4.0.1",
-    "openzeppelin-solidity": "^1.9.0"
+    "openzeppelin-solidity": "^1.11.0"
   }
 }
