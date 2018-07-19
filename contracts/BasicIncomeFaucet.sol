@@ -55,7 +55,7 @@ contract BasicIncomeFaucet {
     return getAmount(nftId, _owner);
   }
 
-  function transfer(address _to, uint256) public returns (bool) {
+  function claimLatest(address _to) public returns (bool) {
     require(_to != address(0));
     uint256 nftId = nft.latestToken(msg.sender);
     uint256 amount = getAmount(nftId, msg.sender);

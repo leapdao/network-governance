@@ -34,7 +34,7 @@ contract('BasicIncomeFaucet', (accounts) => {
     available = await faucet.balanceOf(alice);
     assert.equal(available.toNumber(), 300000000000);
     // claim faucet balance
-    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+    await faucet.claimLatest(alice, {from: alice}).should.be.fulfilled;
     const bal = await token.balanceOf(alice);
     assert.equal(bal.toNumber(), available.toNumber());
     // balance 0 after claim
@@ -44,8 +44,7 @@ contract('BasicIncomeFaucet', (accounts) => {
 
   it('should cap at 8 tacos', async () => {
     await nft.mint(alice, 9).should.be.fulfilled;
-    const available = await faucet.balanceOf(alice);
-    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+    await faucet.claimLatest(alice, {from: alice}).should.be.fulfilled;
   });
 
   it('should allow minting only by whitelisted accounts', async () => {
@@ -58,25 +57,23 @@ contract('BasicIncomeFaucet', (accounts) => {
     await nft.mint(alice, 3).should.be.fulfilled;
     const available = await faucet.balanceOf(alice);
     assert.equal(available.toNumber(), 0);
-    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await faucet.claimLatest(alice, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 
   it('should prevent double claim with same nft', async () => {
     await nft.mint(alice, 4).should.be.fulfilled;
-    const available = await faucet.balanceOf(alice);
     // first try
-    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+    await faucet.claimLatest(alice, {from: alice}).should.be.fulfilled;
     // second try
-    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await faucet.claimLatest(alice, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 
   it('should prevent double claim with different nft within short time', async () => {
     let event = await nft.mint(alice, 4).should.be.fulfilled;
-    const available = await faucet.balanceOf(alice);
     // first try
-    await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+    await faucet.claimLatest(alice, {from: alice}).should.be.fulfilled;
     // second try
     await nft.mint(alice, 5).should.be.fulfilled;
-    await faucet.transfer(alice, available, {from: alice}).should.be.rejectedWith(EVMRevert);
+    await faucet.claimLatest(alice, {from: alice}).should.be.rejectedWith(EVMRevert);
   });
 });
