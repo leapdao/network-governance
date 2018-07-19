@@ -38,7 +38,7 @@ contract TacoIncomeToken is ERC721BasicToken {
     }
   }
 
-  function mint(address _to, uint256 _tacoAmount) public {
+  function mint(address _to, uint32 _tacoAmount) public {
     super._mint(_to, now << 192 | uint160(keccak256(abi.encodePacked(_to, _tacoAmount, now))) << 32 | _tacoAmount);
   }
 
