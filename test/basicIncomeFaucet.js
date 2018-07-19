@@ -1,7 +1,7 @@
 import chai from 'chai';
 import EVMRevert from './helpers/EVMRevert';
 const BasicIncomeFaucet = artifacts.require('./BasicIncomeFaucet.sol');
-const ERC721BasicToken = artifacts.require('./mocks/ERC721BasicTokenMock.sol');
+const ERC721BasicToken = artifacts.require('./TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
 const { assertRevert } = require('./helpers/assertThrow')
 

@@ -6,7 +6,7 @@ import "openzeppelin-solidity/contracts/token/ERC721/ERC721BasicToken.sol";
  * @title ERC721BasicTokenMock
  * This mock just provides a public mint and burn functions for testing purposes
  */
-contract ERC721BasicTokenMock is ERC721BasicToken {
+contract TacoIncomeToken is ERC721BasicToken {
 
   mapping(address => uint256) public latestToken;
 
