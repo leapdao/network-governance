@@ -2,11 +2,7 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
-
-contract LatestERC721 is ERC721 {
-  function latestToken(address _owner) public view returns (uint256);
-}
+import "./LatestERC721.sol";
 
 contract MarketMaker {
   using SafeMath for uint256;

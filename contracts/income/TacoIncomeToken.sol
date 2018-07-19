@@ -2,12 +2,13 @@ pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721Token.sol";
 import "openzeppelin-solidity/contracts/access/Whitelist.sol";
+import "./LatestERC721.sol";
 
 /**
  * @title TacoIncomeToken
  * This mock just provides a public mint and burn functions for testing purposes
  */
-contract TacoIncomeToken is ERC721Token, Whitelist {
+contract TacoIncomeToken is ERC721Token, Whitelist, LatestERC721 {
 
   constructor() ERC721Token('ParsecIncomeToken', 'PIT') public {
     addAddressToWhitelist(msg.sender);
