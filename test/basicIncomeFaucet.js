@@ -48,6 +48,12 @@ contract('BasicIncomeFaucet', (accounts) => {
     await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
   });
 
+  it('should allow minting only by whitelisted accounts', async () => {
+    await nft.mint(alice, 4, { from: alice }).should.be.rejectedWith(EVMRevert);
+    nft.addAddressToWhitelist(alice);
+    await nft.mint(alice, 4, { from: alice }).should.be.fulfilled;
+  });
+
   it('should prevent to claim less than 4 tacos', async () => {
     await nft.mint(alice, 3).should.be.fulfilled;
     const available = await faucet.balanceOf(alice);
