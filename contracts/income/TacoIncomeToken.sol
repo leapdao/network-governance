@@ -10,7 +10,7 @@ import "./LatestERC721.sol";
  */
 contract TacoIncomeToken is ERC721Token, Whitelist, LatestERC721 {
 
-  constructor() ERC721Token('ParsecIncomeToken', 'PIT') public {
+  constructor() ERC721Token('TacoIncomeToken', 'TIT') public {
     addAddressToWhitelist(msg.sender);
   }
 
