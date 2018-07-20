@@ -1,7 +1,7 @@
 import chai from 'chai';
 import EVMRevert from './helpers/EVMRevert';
-const BasicIncomeFaucet = artifacts.require('./BasicIncomeFaucet.sol');
-const ERC721BasicToken = artifacts.require('./mocks/ERC721BasicTokenMock.sol');
+const BasicIncomeFaucet = artifacts.require('./income/BasicIncomeFaucet.sol');
+const TacoIncomeToken = artifacts.require('./income/TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
 const { assertRevert } = require('./helpers/assertThrow')
 
@@ -17,7 +17,7 @@ contract('BasicIncomeFaucet', (accounts) => {
   const alice = accounts[1];
 
   beforeEach(async () => {
-    nft = await ERC721BasicToken.new().should.be.fulfilled;
+    nft = await TacoIncomeToken.new().should.be.fulfilled;
     token = await SimpleToken.new().should.be.fulfilled;
     const tokensPerTaco = 750 * 100000000;
     faucet = await BasicIncomeFaucet.new(token.address, nft.address, council, tokensPerTaco).should.be.fulfilled;
@@ -46,6 +46,12 @@ contract('BasicIncomeFaucet', (accounts) => {
     await nft.mint(alice, 9).should.be.fulfilled;
     const available = await faucet.balanceOf(alice);
     await faucet.transfer(alice, available, {from: alice}).should.be.fulfilled;
+  });
+
+  it('should allow minting only by whitelisted accounts', async () => {
+    await nft.mint(alice, 4, { from: alice }).should.be.rejectedWith(EVMRevert);
+    nft.addAddressToWhitelist(alice);
+    await nft.mint(alice, 4, { from: alice }).should.be.fulfilled;
   });
 
   it('should prevent to claim less than 4 tacos', async () => {
