@@ -59,6 +59,8 @@ contract('VestingLock', (accounts) => {
 
     // check everything claimed
   	bal = await parsec.balanceOf(alice);
-  	assert(bal.toNumber() === total);
+    assert(bal.toNumber() === total);
+    
+    assert(await vesting.decimals(), parsec.decimals());
   });
 });

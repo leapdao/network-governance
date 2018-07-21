@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20Basic.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -14,10 +14,10 @@ contract VestingLock is Ownable, ERC20Basic {
   uint256 vestingCliff;   // 44 basic incomes 
   uint256 vestingPeriod; // 176 basic incomes (in 4 years)
   mapping(uint256 => bool) claims;
-  ERC20 token;
+  DetailedERC20 token;
   LatestERC721 nft;
   
-  constructor(ERC20 _token, LatestERC721 _nft, uint256 _vestingCliff, uint256 _vestingPeriod, address _beneficiary) public {
+  constructor(DetailedERC20 _token, LatestERC721 _nft, uint256 _vestingCliff, uint256 _vestingPeriod, address _beneficiary) public {
     token = _token;
     receivedIncomes = 0;
     vestingCliff = _vestingCliff;
@@ -50,6 +50,10 @@ contract VestingLock is Ownable, ERC20Basic {
   function balanceOf(address) public view returns (uint256) {
     uint256 nftId = nft.latestToken(owner);
     return _amountVested(nftId);
+  }
+
+  function decimals() public view returns (uint8) {
+    return token.decimals();    
   }
 
   
