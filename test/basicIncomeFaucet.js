@@ -22,7 +22,7 @@ contract('BasicIncomeFaucet', (accounts) => {
     nft = await TacoIncomeToken.new().should.be.fulfilled;
     token = await SimpleToken.new().should.be.fulfilled;
     const tokensPerTaco = 750 * 100000000;
-    faucet = await BasicIncomeFaucet.new(token.address, nft.address, council, tokensPerTaco, 60 * 60 * 24 * 3).should.be.fulfilled;
+    faucet = await BasicIncomeFaucet.new(token.address, nft.address, council, tokensPerTaco).should.be.fulfilled;
     const totalSupply = await token.totalSupply();
     await token.approve(faucet.address, totalSupply, {from: council});
   });
@@ -44,10 +44,10 @@ contract('BasicIncomeFaucet', (accounts) => {
     assert.equal(available.toNumber(), 0);
 
     // mint 8 more
-    await nft.mint(alice, 8).should.be.fulfilled;
     const openingTime = latestTime();
-    const nextWeek = openingTime + duration.weeks(1);
+    const nextWeek = openingTime + duration.days(4);
     await increaseTimeTo(nextWeek);
+    await nft.mint(alice, 8).should.be.fulfilled;
     available = await faucet.balanceOf(alice);
     assert.equal(available.toNumber(), 600000000000);
   });

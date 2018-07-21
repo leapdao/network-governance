@@ -17,14 +17,12 @@ contract BasicIncomeFaucet {
   ERC20 token;
   address council;
   uint256 valuePerTaco;
-  uint256 claimDistance;
   
-  constructor(ERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco, uint256 _claimDistance) public {
+  constructor(ERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
     token = _token;
     nft = _nft;
     council = _council;
     valuePerTaco = _valuePerTaco;
-    claimDistance = _claimDistance;
   }
 
   function getAmount(uint256 _nftId, address _owner) internal view returns (uint256) {
@@ -38,7 +36,7 @@ contract BasicIncomeFaucet {
     // read date from nft
     uint256 createdAt = _nftId >> 192;
     // check date is at least 3 days higher than last claim
-    if (createdAt < claims[_owner].add(claimDistance)) {
+    if (createdAt < claims[_owner].add(3 days)) {
       return 0;
     }
     // check amount of tacos
