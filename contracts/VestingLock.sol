@@ -6,14 +6,13 @@ import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./income/LatestERC721.sol";
 
-contract VestingLock is Ownable {
+contract VestingLock is Ownable, ERC20Basic {
   using SafeMath for uint256;
   
   uint256 receivedIncomes;
   // TODO: think about "holidays" for vesting
   uint256 vestingCliff;   // 44 basic incomes 
   uint256 vestingPeriod; // 176 basic incomes (in 4 years)
-  address beneficiary;
   mapping(uint256 => bool) claims;
   ERC20 token;
   LatestERC721 nft;
@@ -23,7 +22,6 @@ contract VestingLock is Ownable {
     receivedIncomes = 0;
     vestingCliff = _vestingCliff;
     owner = _beneficiary;
-    beneficiary = _beneficiary;
     vestingPeriod = _vestingPeriod;
     nft = _nft;
     claims[0] = true;
@@ -57,15 +55,13 @@ contract VestingLock is Ownable {
   
   function transfer(address, uint256 _nftId) onlyOwner public returns (bool) {
     if (_nftId == 0) {
-      // we check the owner, not beneficiary
-      // so that user can rotate keys
       _nftId = nft.latestToken(owner);
     }
     require(claims[_nftId] == false);
-    // verify that nft has been issued to beneficiary address
+    // verify that nft has been issued to owner address
     uint256 time = uint64(_nftId >> 192);
     uint256 tacoAmount = uint32(_nftId);
-    uint256 expectedNftId = time << 192 | uint192(uint160(keccak256(abi.encodePacked(beneficiary, tacoAmount, time)))) << 32 | tacoAmount;
+    uint256 expectedNftId = time << 192 | uint192(uint160(keccak256(abi.encodePacked(owner, tacoAmount, time)))) << 32 | tacoAmount;
     require(expectedNftId == _nftId);
     // remember nft and increase count
     claims[_nftId] = true;
