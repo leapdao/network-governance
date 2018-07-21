@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
@@ -14,11 +14,11 @@ contract BasicIncomeFaucet {
   mapping(address => uint256) claims;
   
   LatestERC721 nft;
-  ERC20 token;
+  DetailedERC20 token;
   address council;
   uint256 valuePerTaco;
   
-  constructor(ERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
+  constructor(DetailedERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
     token = _token;
     nft = _nft;
     council = _council;
@@ -53,6 +53,18 @@ contract BasicIncomeFaucet {
     // check latest nft of owner
     uint256 nftId = nft.latestToken(_owner);
     return getAmount(nftId, _owner);
+  }
+
+  function decimals() public view returns (uint8) {
+    return token.decimals();    
+  }
+
+  function name() public view returns (string) {
+    return token.name();
+  }
+
+  function symbol() public view returns (string) {
+    return token.symbol();
   }
 
   function transfer(address _to, uint256) public returns (bool) {

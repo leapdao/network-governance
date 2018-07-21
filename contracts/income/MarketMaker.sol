@@ -1,5 +1,6 @@
 pragma solidity ^0.4.24;
 
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./LatestERC721.sol";
@@ -10,13 +11,13 @@ contract MarketMaker {
   
   LatestERC721 nft;
   ERC20 token;
-  ERC20 dai;
+  DetailedERC20 dai;
   address council;
   uint256 rate;
   uint256 base;
   uint256 constant min = 20000000000;
   
-  constructor(ERC20 _token, ERC20 _dai, LatestERC721 _nft, address _council, uint256 _base) public {
+  constructor(ERC20 _token, DetailedERC20 _dai, LatestERC721 _nft, address _council, uint256 _base) public {
     token = _token;
     dai = _dai;
     nft = _nft;
@@ -57,6 +58,18 @@ contract MarketMaker {
     // check latest nft of owner
     uint256 nftId = nft.latestToken(_owner);
     return getAmount(nftId, base, _owner);
+  }
+
+  function decimals() public view returns (uint8) {
+    return dai.decimals();    
+  }
+
+  function name() public view returns (string) {
+    return dai.name();
+  }
+
+  function symbol() public view returns (string) {
+    return dai.symbol();
   }
 
   function transfer(address _to, uint256 _value) public returns (bool) {

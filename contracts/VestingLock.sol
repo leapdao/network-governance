@@ -56,7 +56,14 @@ contract VestingLock is Ownable, ERC20Basic {
     return token.decimals();    
   }
 
-  
+  function name() public view returns (string) {
+    return token.name();
+  }
+
+  function symbol() public view returns (string) {
+    return token.symbol();
+  }
+
   function transfer(address, uint256 _nftId) onlyOwner public returns (bool) {
     if (_nftId == 0) {
       _nftId = nft.latestToken(owner);
