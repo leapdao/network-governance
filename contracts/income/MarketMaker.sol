@@ -17,20 +17,20 @@ contract MarketMaker {
   uint256 constant min = 20000000000;
   
   constructor(ERC20 _token, ERC20 _dai, LatestERC721 _nft, address _council, uint256 _base) public {
-      token = _token;
-      dai = _dai;
-      nft = _nft;
-      council = _council;
-      base = _base;
+    token = _token;
+    dai = _dai;
+    nft = _nft;
+    council = _council;
+    base = _base;
   }
 
   function sqrt(uint x) internal pure returns (uint y) {
-      uint z = x.add(1).div(2);
-      y = x;
-      while (z < y) {
-          y = z;
-          z = x.div(z).add(z).div(2);
-      }
+    uint z = x.add(1).div(2);
+    y = x;
+    while (z < y) {
+      y = z;
+      z = x.div(z).add(z).div(2);
+    }
   }
 
   function getAmount(uint256 _nftId, uint256 _value, address _owner) internal view returns (uint256) {

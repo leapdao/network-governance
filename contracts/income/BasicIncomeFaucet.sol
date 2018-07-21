@@ -19,10 +19,10 @@ contract BasicIncomeFaucet {
   uint256 valuePerTaco;
   
   constructor(ERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
-      token = _token;
-      nft = _nft;
-      council = _council;
-      valuePerTaco = _valuePerTaco;
+    token = _token;
+    nft = _nft;
+    council = _council;
+    valuePerTaco = _valuePerTaco;
   }
 
   function getAmount(uint256 _nftId, address _owner) internal view returns (uint256) {
