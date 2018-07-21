@@ -40,6 +40,11 @@ contract('BasicIncomeFaucet', (accounts) => {
     // balance 0 after claim
     available = await faucet.balanceOf(alice);
     assert.equal(available.toNumber(), 0);
+
+    // mint 8 more
+    await nft.mint(alice, 8).should.be.fulfilled;
+    available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 600000000000);
   });
 
   it('should cap at 8 tacos', async () => {
