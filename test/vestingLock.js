@@ -57,7 +57,7 @@ contract('VestingLock', (accounts) => {
     await vesting.transfer(alice, 0, { from: alice }).should.be.fulfilled;
 
     bal = await parsec.balanceOf(alice);
-    assert.equal(bal, 7500000);
+    assert.equal(bal.toNumber(), 7500000);
 
     await vesting.transfer(event.logs[0].args._tokenId, 0, { from: alice }).should.be.fulfilled;
 

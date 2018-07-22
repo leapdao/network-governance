@@ -32,7 +32,11 @@ contract MarketMaker {
   function balanceOf(address _owner) public view returns (uint256) {
     // check latest nft of owner
     uint256 nftId = nft.latestToken(_owner);
-    return getAmount(nftId, basePscValue, _owner);
+    if (getAmount(nftId, basePscValue, _owner) > 0) {
+      return basePscValue;
+    } else {
+      return 0;
+    }
   }
 
   function decimals() public view returns (uint8) {
