@@ -3,7 +3,6 @@ import EVMRevert from './helpers/EVMRevert';
 const MarketMaker = artifacts.require('./income/MarketMaker.sol');
 const TacoIncomeToken = artifacts.require('./income/TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
-const { assertRevert } = require('./helpers/assertThrow')
 
 const should = chai
   .use(require('chai-as-promised'))
@@ -23,7 +22,7 @@ contract('MarketMaker', (accounts) => {
     nft = await TacoIncomeToken.new().should.be.fulfilled;
     token = await SimpleToken.new({from: alice}).should.be.fulfilled;
     dai = await SimpleToken.new().should.be.fulfilled;
-    market = await MarketMaker.new(token.address, dai.address, nft.address, council, base).should.be.fulfilled;
+    market = await MarketMaker.new(token.address, dai.address, nft.address, council, base, minDaiPayment).should.be.fulfilled;
     const totalSupply = await dai.totalSupply();
     await dai.approve(market.address, totalSupply, {from: council});
     await token.approve(market.address, base * 20, {from: alice});

@@ -15,14 +15,15 @@ contract MarketMaker {
   address council;
   uint256 rate;
   uint256 base;
-  uint256 constant min = 20000000000;
+  uint256 min;
   
-  constructor(ERC20 _token, DetailedERC20 _dai, LatestERC721 _nft, address _council, uint256 _base) public {
+  constructor(ERC20 _token, DetailedERC20 _dai, LatestERC721 _nft, address _council, uint256 _base, uint256 _min) public {
     token = _token;
     dai = _dai;
     nft = _nft;
     council = _council;
     base = _base;
+    min = _min;
   }
 
   function sqrt(uint x) internal pure returns (uint y) {
