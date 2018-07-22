@@ -33,9 +33,9 @@ contract VestingLock is Ownable, ERC20Basic {
       lookaheadIncomes++;
     }
     if (lookaheadIncomes == vestingCliff) {
-      return totalSupply().mul(lookaheadIncomes).div(vestingPeriod);
+      return _tokensRemaining().mul(lookaheadIncomes).div(vestingPeriod);
     } else if (lookaheadIncomes > vestingCliff) {
-      return totalSupply().div(vestingPeriod.sub(lookaheadIncomes.sub(1)));
+      return _tokensRemaining().div(vestingPeriod.sub(lookaheadIncomes.sub(1)));
     }
   }
 
