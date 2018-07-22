@@ -60,7 +60,7 @@ contract BasicIncomeFaucet {
   }
 
   function name() public view returns (string) {
-    return token.name();
+    return string(abi.encodePacked(token.name(), " Income Faucet"));
   }
 
   function symbol() public view returns (string) {

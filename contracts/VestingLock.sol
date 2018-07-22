@@ -57,7 +57,7 @@ contract VestingLock is Ownable, ERC20Basic {
   }
 
   function name() public view returns (string) {
-    return token.name();
+    return string(abi.encodePacked(token.name(), " Lock and Vesting"));
   }
 
   function symbol() public view returns (string) {

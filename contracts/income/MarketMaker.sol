@@ -40,7 +40,7 @@ contract MarketMaker {
   }
 
   function name() public view returns (string) {
-    return dai.name();
+    return string(abi.encodePacked("PARSEC ", dai.name(), " Market Maker"));
   }
 
   function symbol() public view returns (string) {
