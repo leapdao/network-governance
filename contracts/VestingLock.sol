@@ -33,8 +33,8 @@ contract VestingLock is Ownable, ERC20Basic {
       lookaheadIncomes++;
     }
     if (lookaheadIncomes >= vestingCliff) {
-      uint256 fraction = (vestingPeriod <= lookaheadIncomes) ? 1 : vestingPeriod.sub(lookaheadIncomes);
-      return totalSupply().div(fraction);
+      uint256 fraction = (vestingPeriod <= lookaheadIncomes) ? 0 : vestingPeriod.sub(lookaheadIncomes);
+      return totalSupply().div(fraction.add(1));
     }
   }
 
@@ -47,8 +47,13 @@ contract VestingLock is Ownable, ERC20Basic {
     return _tokensRemaining();
   }
 
-  function balanceOf(address) public view returns (uint256) {
-    uint256 nftId = nft.latestToken(owner);
+  function balanceOf(address _nftId) public view returns (uint256) {
+    uint256 nftId;
+    if (_nftId == owner) {
+      nftId = nft.latestToken(owner);
+    } else {
+      nftId = uint256(_nftId);
+    }
     return _amountVested(nftId);
   }
 
@@ -64,22 +69,25 @@ contract VestingLock is Ownable, ERC20Basic {
     return token.symbol();
   }
 
-  function transfer(address, uint256 _nftId) onlyOwner public returns (bool) {
-    if (_nftId == 0) {
-      _nftId = nft.latestToken(owner);
+  function transfer(address _nftId, uint256) onlyOwner public returns (bool) {
+    uint256 nftId;
+    if (_nftId == owner) {
+      nftId = nft.latestToken(owner);
+    } else {
+      nftId = uint256(_nftId);
     }
-    require(claims[_nftId] == false);
+    require(claims[nftId] == false);
     // verify that nft has been issued to owner address
-    uint256 time = uint64(_nftId >> 192);
-    uint256 tacoAmount = uint32(_nftId);
-    uint256 expectedNftId = time << 192 | uint192(uint160(keccak256(abi.encodePacked(owner, tacoAmount, time)))) << 32 | tacoAmount;
-    require(expectedNftId == _nftId);
+    uint256 time = uint32(nftId >> 128);
+    uint256 tacoAmount = uint32(nftId);
+    uint256 expectedNftId = uint160(time << 128 | uint128(uint96(keccak256(abi.encodePacked(owner, tacoAmount, time)))) << 32 | tacoAmount);
+    require(expectedNftId == nftId);
     // remember nft and increase count
-    claims[_nftId] = true;
+    claims[nftId] = true;
     receivedIncomes++;
     // if we passed cliff, start paying
     if (receivedIncomes >= vestingCliff) {
-      token.transfer(owner, _amountVested(_nftId));
+      token.transfer(owner, _amountVested(nftId));
     }
   }
 

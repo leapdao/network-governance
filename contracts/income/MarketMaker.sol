@@ -11,14 +11,14 @@ contract MarketMaker {
   mapping(address => uint256) claims;
   
   LatestERC721 nft;
-  ERC20 token;
-  DetailedERC20 dai;
+  DetailedERC20 token;
+  ERC20 dai;
   address council;
   uint256 basePscValue;
   uint256 minDaiPayment;
   
   constructor(
-    ERC20 _token, DetailedERC20 _dai, LatestERC721 _nft,
+    DetailedERC20 _token, ERC20 _dai, LatestERC721 _nft,
     address _council, uint256 _basePscValue, uint256 _minDaiPayment
   ) public {
     token = _token;
@@ -36,15 +36,15 @@ contract MarketMaker {
   }
 
   function decimals() public view returns (uint8) {
-    return dai.decimals();    
+    return token.decimals();    
   }
 
   function name() public view returns (string) {
-    return string(abi.encodePacked("PARSEC ", dai.name(), " Market Maker"));
+    return string(abi.encodePacked(token.name(), " Market Maker"));
   }
 
   function symbol() public view returns (string) {
-    return dai.symbol();
+    return token.symbol();
   }
 
   function transfer(address _to, uint256 _value) public returns (bool) {
@@ -84,7 +84,7 @@ contract MarketMaker {
       return 0;
     }
     // read date from nft
-    uint256 createdAt = _nftId >> 192;
+    uint256 createdAt = _nftId >> 128;
     // check date is at least 3 days higher than last claim
     if (createdAt < claims[_owner].add(3 days)) {
       return 0;

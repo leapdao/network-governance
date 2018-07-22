@@ -33,7 +33,7 @@ contract('VestingLock', (accounts) => {
 
     // record one income
     await nft.mint(alice, 1).should.be.fulfilled;
-    await vesting.transfer('', 0, {from: alice }).should.be.fulfilled;
+    await vesting.transfer(alice, 0, {from: alice }).should.be.fulfilled;
 
     // check that cliff not passed yet
     let claimBal = await vesting.balanceOf(alice);
@@ -47,15 +47,19 @@ contract('VestingLock', (accounts) => {
     assert.equal(claimBal.toNumber(), total / 2);
 
     // claim first tokens
-  	await vesting.transfer('', 0, {from: alice }).should.be.fulfilled;
-  	let bal = await parsec.balanceOf(alice );
-  	assert.equal(bal.mul(2).toNumber(), total);
+  	await vesting.transfer(alice, 0, {from: alice }).should.be.fulfilled;
+  	let bal = await parsec.balanceOf(alice);
+  	assert.equal(bal, total / 2);
 
     // allow claims in different orders
     const event = await nft.mint(alice, 3).should.be.fulfilled;
     await nft.mint(alice, 4).should.be.fulfilled;
-    await vesting.transfer('', 0, { from: alice }).should.be.fulfilled;
-    await vesting.transfer('', event.logs[0].args._tokenId, { from: alice }).should.be.fulfilled;
+    await vesting.transfer(alice, 0, { from: alice }).should.be.fulfilled;
+
+    bal = await parsec.balanceOf(alice);
+    assert.equal(bal, 7500000);
+
+    await vesting.transfer(event.logs[0].args._tokenId, 0, { from: alice }).should.be.fulfilled;
 
     // check everything claimed
   	bal = await parsec.balanceOf(alice);

@@ -34,7 +34,7 @@ contract BasicIncomeFaucet {
       return 0;
     }
     // read date from nft
-    uint256 createdAt = _nftId >> 192;
+    uint256 createdAt = _nftId >> 128;
     // check date is at least 3 days higher than last claim
     if (createdAt < claims[_owner].add(3 days)) {
       return 0;
