@@ -4,6 +4,8 @@ const BasicIncomeFaucet = artifacts.require('./income/BasicIncomeFaucet.sol');
 const TacoIncomeToken = artifacts.require('./income/TacoIncomeToken.sol');
 const SimpleToken = artifacts.require('./mocks/SimpleToken.sol');
 const { assertRevert } = require('./helpers/assertThrow')
+import { increaseTimeTo, duration } from './helpers/increaseTime';
+import latestTime from './helpers/latestTime';
 
 const should = chai
   .use(require('chai-as-promised'))
@@ -40,6 +42,14 @@ contract('BasicIncomeFaucet', (accounts) => {
     // balance 0 after claim
     available = await faucet.balanceOf(alice);
     assert.equal(available.toNumber(), 0);
+
+    // mint 8 more
+    const openingTime = latestTime();
+    const nextWeek = openingTime + duration.days(4);
+    await increaseTimeTo(nextWeek);
+    await nft.mint(alice, 8).should.be.fulfilled;
+    available = await faucet.balanceOf(alice);
+    assert.equal(available.toNumber(), 600000000000);
   });
 
   it('should cap at 8 tacos', async () => {
@@ -50,7 +60,7 @@ contract('BasicIncomeFaucet', (accounts) => {
 
   it('should allow minting only by whitelisted accounts', async () => {
     await nft.mint(alice, 4, { from: alice }).should.be.rejectedWith(EVMRevert);
-    nft.addAddressToWhitelist(alice);
+    await nft.addAddressToWhitelist(alice).should.be.fulfilled;
     await nft.mint(alice, 4, { from: alice }).should.be.fulfilled;
   });
 

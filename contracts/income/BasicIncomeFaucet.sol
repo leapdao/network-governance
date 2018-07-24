@@ -1,6 +1,6 @@
 pragma solidity ^0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/DetailedERC20.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "openzeppelin-solidity/contracts/token/ERC721/ERC721.sol";
 
@@ -14,15 +14,15 @@ contract BasicIncomeFaucet {
   mapping(address => uint256) claims;
   
   LatestERC721 nft;
-  ERC20 token;
+  DetailedERC20 token;
   address council;
   uint256 valuePerTaco;
   
-  constructor(ERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
-      token = _token;
-      nft = _nft;
-      council = _council;
-      valuePerTaco = _valuePerTaco;
+  constructor(DetailedERC20 _token, LatestERC721 _nft, address _council, uint256 _valuePerTaco) public {
+    token = _token;
+    nft = _nft;
+    council = _council;
+    valuePerTaco = _valuePerTaco;
   }
 
   function getAmount(uint256 _nftId, address _owner) internal view returns (uint256) {
@@ -34,7 +34,7 @@ contract BasicIncomeFaucet {
       return 0;
     }
     // read date from nft
-    uint256 createdAt = _nftId >> 192;
+    uint256 createdAt = _nftId >> 128;
     // check date is at least 3 days higher than last claim
     if (createdAt < claims[_owner].add(3 days)) {
       return 0;
@@ -53,6 +53,18 @@ contract BasicIncomeFaucet {
     // check latest nft of owner
     uint256 nftId = nft.latestToken(_owner);
     return getAmount(nftId, _owner);
+  }
+
+  function decimals() public view returns (uint8) {
+    return token.decimals();    
+  }
+
+  function name() public view returns (string) {
+    return string(abi.encodePacked(token.name(), " Income Faucet"));
+  }
+
+  function symbol() public view returns (string) {
+    return token.symbol();
   }
 
   function transfer(address _to, uint256) public returns (bool) {

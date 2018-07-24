@@ -20,8 +20,10 @@ contract TacoIncomeToken is ERC721Token, Whitelist, LatestERC721 {
     return ownedTokens[_from][lastTokenIndex];
   }
 
-  function mint(address _to, uint32 _tacoAmount) public onlyIfWhitelisted(msg.sender) {
-    super._mint(_to, now << 192 | uint160(keccak256(abi.encodePacked(_to, _tacoAmount, now))) << 32 | _tacoAmount);
+  function mint(address _to, uint256 _tacoAmount) public onlyIfWhitelisted(msg.sender) {
+    require(_tacoAmount < 2^32);
+    uint256 nftId = uint160(now << 128 | uint128(uint96(keccak256(abi.encodePacked(_to, _tacoAmount, now)))) << 32 | _tacoAmount);
+    super._mint(_to, nftId);
   }
 
   function burn(uint256 _tokenId) public onlyIfWhitelisted(msg.sender) {

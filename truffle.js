@@ -1,14 +1,53 @@
-require('babel-register');
-require('babel-polyfill');
+require('babel-register')
+require('babel-polyfill')
 
+require('dotenv').config();
+
+var HDWalletProvider = require('truffle-hdwallet-provider')
 
 module.exports = {
+  solc: {
+    optimizer: {
+      enabled: true,
+      runs: 500
+    }
+  },
+  // See <http://truffleframework.com/docs/advanced/configuration>
+  // to customize your Truffle configuration!
   networks: {
     development: {
-      host: "localhost",
+      host: 'localhost',
       port: 8545,
-      gas: 4500000,
-      network_id: "*" // Match any network id
+      network_id: '*' // match any network
+    },
+    rinkeby: {
+      provider: function() {
+        return new HDWalletProvider(
+          process.env.RINKEBY_MNEMONIC,
+          'https://rinkeby.infura.io',
+          process.env.RINKEBY_ACCOUNT_INDEX || 0
+        )
+      },
+      gasPrice: 10000000000, // 10 gwei
+      gas: 7000000,
+      network_id: 4
+    },
+    mainnet: {
+      provider: function() {
+        return new HDWalletProvider(
+          process.env.MAINNET_MNEMONIC,
+          'https://mainnet.infura.io',
+          process.env.MAINNET_ACCOUNT_INDEX || 0
+        )
+      },
+      gasPrice: 10000000000, // 10 gwei
+      gas: 7000000,
+      network_id: 4
+    },
+    ganache: {
+      host: 'localhost',
+      port: 7545,
+      network_id: 5777
     }
   }
-};
+}
