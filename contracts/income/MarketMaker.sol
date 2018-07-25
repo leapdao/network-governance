@@ -33,7 +33,9 @@ contract MarketMaker {
     // check latest nft of owner
     uint256 nftId = nft.latestToken(_owner);
     if (getAmount(nftId, basePscValue, _owner) > 0) {
-      return basePscValue;
+      uint256 bal = token.balanceOf(_owner);
+      bal = (bal > basePscValue * 16) ? basePscValue * 16 : bal;
+      return bal;
     } else {
       return 0;
     }

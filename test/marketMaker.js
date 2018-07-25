@@ -35,7 +35,7 @@ contract('MarketMaker', (accounts) => {
     await nft.mint(alice, 4).should.be.fulfilled;
     // base marketMaker balance after minting
     available = await market.balanceOf(alice);
-    assert.equal(available.toNumber(), base);
+    assert.equal(available.toNumber(), base * 16);
     // exchange tokens for dai
     await market.transfer(alice, base, {from: alice}).should.be.fulfilled;
     const bal = await dai.balanceOf(alice);
