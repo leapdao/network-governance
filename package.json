@@ -1,5 +1,5 @@
 {
-  "name": "parsec-token",
+  "name": "leap-token",
   "license": "MIT",
   "main": "truffle.js",
   "scripts": {

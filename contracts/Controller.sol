@@ -7,8 +7,8 @@ import "openzeppelin-solidity/contracts/token/ERC20/PausableToken.sol";
 contract Controller is ERC827Token, MintableToken, PausableToken {
   address public thisAddr; // matches delegation slot in proxy
   uint256 public cap;      // the max cap of this token
-  string public constant name = "Parsec Labs"; // solium-disable-line uppercase
-  string public constant symbol = "PSC"; // solium-disable-line uppercase
+  string public constant name = "Leap DAO"; // solium-disable-line uppercase
+  string public constant symbol = "LEAP"; // solium-disable-line uppercase
   uint8 public constant decimals = 18; // solium-disable-line uppercase
   
   /**
