@@ -11,9 +11,9 @@ contract('MinGov', (accounts) => {
   let bridge;
   let gov;
 
-  before(async () => {
+  beforeEach(async () => {
     bridge = await LeapBridge.new();
-    gov = await MinGov.new(bridge.address, 0);
+    gov = await MinGov.new(0);
     await bridge.transferOwnership(gov.address);
   });
 
@@ -25,7 +25,7 @@ contract('MinGov', (accounts) => {
 
     // propose and finalize value change
     const data = await bridge.contract.setExitStake.getData(100);
-    await gov.propose(data);
+    await gov.propose(bridge.address, data);
     await gov.finalize();
 
     // check value after
@@ -36,16 +36,39 @@ contract('MinGov', (accounts) => {
   it('should allow to propose and finalize multiple operations', async () => {
     // propose and finalize value changes
     const data1 = await bridge.contract.setExitStake.getData(200);
-    await gov.propose(data1);
+    await gov.propose(bridge.address, data1);
     const data2 = await bridge.contract.setEpochLength.getData(32);
-    await gov.propose(data2);
+    await gov.propose(bridge.address, data2);
+    let size = await gov.size();
+    let first = await gov.first();
+    assert.equal(size.toNumber(), 2);
     await gov.finalize();
 
     // check values after
-    const exitStake = await bridge.exitStake();
+    let exitStake = await bridge.exitStake();
     assert.equal(exitStake.toNumber(), 200);
     const epochLength = await bridge.epochLength();
     assert.equal(epochLength.toNumber(), 32);
+
+    // propose and finalize value changes
+    const data3 = await bridge.contract.setExitStake.getData(300);
+    await gov.propose(bridge.address, data3);
+    first = await gov.first();
+    // position 1 and 2 have been used in first finalize
+    assert.equal(first.toNumber(), 3);
+    size = await gov.size();
+    assert.equal(size.toNumber(), 1);
+    await gov.finalize();
+
+    // check values after
+    exitStake = await bridge.exitStake();
+    assert.equal(exitStake.toNumber(), 300);
+    first = await gov.first();
+    size = await gov.size();
+    // position 3 in second finalize
+    assert.equal(first.toNumber(), 4);
+    // nothing in the pipe
+    assert.equal(size.toNumber(), 0);
   });
 
 });
