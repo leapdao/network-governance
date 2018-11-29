@@ -1,0 +1,57 @@
+{
+	"name": "LeapDAO-governance-utils",
+	"version": "0.1.0",
+	"description": "LeapDAO governance smart contracts",
+	"main": "truffle.js",
+	"scripts": {
+		"coverage": "scripts/coverage.sh",
+		"coveralls": "scripts/coveralls.sh",
+		"gas-estimate": "node scripts/gas-estimate.js",
+		"solium": "./node_modules/solium/bin/solium.js --dir contracts",
+		"test": "scripts/test.sh",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"lint:sol": "solium -d .",
+		"lint:sol:fix": "solium -d . --fix",
+		"lint:all": "npm run lint && npm run lint:sol",
+		"lint:all:fix": "npm run lint:fix && npm run lint:sol:fix",
+		"docs": "rm -r docs && npx docusaurus-init && cd scripts && node ./gen-docs.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"author": "",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/leapdao/governance-utilities"
+	},
+	"homepage": "https://leapdao.org",
+	"dependencies": {
+		"@thetta/core": "^1.4.1",
+		"babel-eslint": "^8.2.6",
+		"babel-polyfill": "^6.26.0",
+		"babel-register": "^6.26.0",
+		"chai": "4.1.2",
+		"chai-as-promised": "7.1.1",
+		"chai-bignumber": "2.0.2",
+		"coveralls": "^3.0.2",
+		"docusaurus-init": "^1.0.2",
+		"eslint": "^5.4.0",
+		"eslint-config-standard": "^10.2.1",
+		"eslint-plugin-import": "^2.14.0",
+		"eslint-plugin-node": "^5.2.1",
+		"eslint-plugin-promise": "^3.8.0",
+		"eslint-plugin-standard": "^3.1.0",
+		"eth-gas-reporter": "^0.1.10",
+		"ganache-cli": "^6.1.8",
+		"growl": "^1.10.5",
+		"install": "^0.12.1",
+		"solc": "^0.4.24",
+		"solidity-coverage": "^0.5.7",
+		"solidity-docgen": "^0.1.0",
+		"solium": "^1.1.8",
+		"truffle": "^4.1.14",
+		"zeppelin-solidity": "^1.12.0"
+	}
+}
