@@ -1,5 +1,6 @@
 import chai from 'chai';
 import util from 'ethereumjs-util';
+const time = require('./helpers/time');
 
 const Bridge = artifacts.require('./mocks/Bridge.sol');
 const Operator = artifacts.require('./mocks/Operator.sol');
@@ -143,6 +144,43 @@ contract('MinGov', (accounts) => {
     // check value after
     const ownerAddr = await bridge.owner();
     assert.equal(ownerAddr, accounts[1]);
+  });
+
+  it('should hold proposal for some time', async () => {
+
+    await time.advanceBlock();
+
+    const openingTime = await time.latest();
+    const afterClosingTime = openingTime + time.duration.weeks(2) + time.duration.seconds(1);
+
+
+    gov = await MinGov.new(time.duration.weeks(2));
+    // bridge
+    const bridgeLogic = await Bridge.new();
+    const proxy = await Proxy.new();
+    await proxy.initialize(bridgeLogic.address);
+    bridge = Bridge.at(proxy.address);
+    await bridge.transferOwnership(gov.address);
+
+    // check value before
+    let operator = await bridge.operator();
+    assert.equal(operator, '0x0000000000000000000000000000000000000000');
+    // propose and finalize value change
+    const data = await bridge.contract.setOperator.getData(accounts[1]);
+    await gov.propose(bridge.address, data);
+
+    // try before time passed
+    await gov.finalize();
+    operator = await bridge.operator();
+    assert.equal(operator, '0x0000000000000000000000000000000000000000');
+
+    // wait and try again
+    await time.increaseTo(afterClosingTime);
+    await gov.finalize();
+
+    // check value after
+    operator = await bridge.operator();
+    assert.equal(operator, accounts[1]);
   });
 
 });
