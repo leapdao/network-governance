@@ -8,10 +8,9 @@
 
 pragma solidity 0.4.24;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-contract LeapBridge is Ownable {
-
+contract LeapBridge {
+  mapping (bytes32 => address) upgradeStore;
   uint256 public exitStake;
   uint256 public epochLength;
 
@@ -21,6 +20,27 @@ contract LeapBridge is Ownable {
 
   function setEpochLength(uint256 _epochLength) public onlyOwner {
     epochLength = _epochLength;
+  }
+
+
+  bytes32 constant ownerKey = keccak256("some random key for owner");
+
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(isOwner());
+    _;
+  }
+
+  /**
+   * @return true if `msg.sender` is the owner of the contract.
+   */
+  function isOwner() public view returns (bool) {
+    return msg.sender == upgradeStore[ownerKey];
+  }
+
+  function transferOwnership(address) public onlyOwner {
   }
 
 }

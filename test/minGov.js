@@ -2,6 +2,7 @@ import chai from 'chai';
 import util from 'ethereumjs-util';
 
 const LeapBridge = artifacts.require('./LeapBridge.sol');
+const Proxy = artifacts.require('./Proxy.sol');
 const MinGov = artifacts.require('./MinGov.sol');
 
 chai.use(require('chai-as-promised')).should();
@@ -12,7 +13,10 @@ contract('MinGov', (accounts) => {
   let gov;
 
   beforeEach(async () => {
-    bridge = await LeapBridge.new();
+    const bridgeLogic = await LeapBridge.new();
+    const proxy = await Proxy.new();
+    await proxy.initialize(bridgeLogic.address);
+    bridge = LeapBridge.at(proxy.address);
     gov = await MinGov.new(0);
     await bridge.transferOwnership(gov.address);
   });
@@ -22,7 +26,6 @@ contract('MinGov', (accounts) => {
     // check value before
     const exitStake1 = await bridge.exitStake();
     assert.equal(exitStake1.toNumber(), 0);
-
     // propose and finalize value change
     const data = await bridge.contract.setExitStake.getData(100);
     await gov.propose(bridge.address, data);
@@ -69,6 +72,21 @@ contract('MinGov', (accounts) => {
     assert.equal(first.toNumber(), 4);
     // nothing in the pipe
     assert.equal(size.toNumber(), 0);
+  });
+
+  it('should allow to do upgrade', async () => {
+    // deploy new contract
+    const proxy = Proxy.at(bridge.address);
+    const newBridgeLogic = await LeapBridge.new();
+
+    // propose and finalize upgrade
+    const data = await proxy.contract.transferLogic.getData(newBridgeLogic.address);
+    await gov.propose(bridge.address, data);
+    await gov.finalize();
+
+    // check value after
+    const logicAddr = await proxy.logic();
+    assert.equal(logicAddr, newBridgeLogic.address);
   });
 
 });

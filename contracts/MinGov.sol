@@ -38,6 +38,8 @@ contract MinGov is Ownable {
             if (prop.created + proposalTime <= now) {
                 if (prop.subject.call(prop.msgData)) {
                    emit Execution(i, prop.subject, prop.msgData);
+                } else {
+                    throw;
                 }
                 delete proposals[i];
                 first++;
