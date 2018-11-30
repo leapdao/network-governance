@@ -9,20 +9,8 @@
 pragma solidity 0.4.24;
 
 
-contract LeapBridge {
+contract UpgradeableOwnable {
   mapping (bytes32 => address) upgradeStore;
-  uint256 public exitStake;
-  uint256 public epochLength;
-
-  function setExitStake(uint256 _exitStake) public onlyOwner {
-    exitStake = _exitStake;
-  }
-
-  function setEpochLength(uint256 _epochLength) public onlyOwner {
-    epochLength = _epochLength;
-  }
-
-
   bytes32 constant ownerKey = keccak256("some random key for owner");
 
   /**
