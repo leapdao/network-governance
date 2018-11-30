@@ -12,7 +12,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 contract MinGov is Ownable {
   
-  uint256 proposalTime;
+  uint256 public proposalTime;
   uint256 public first;
   uint256 public size;
   
@@ -34,7 +34,7 @@ contract MinGov is Ownable {
     size = 0;
   }
 
-  function propose(address _subject, bytes _msgData) onlyOwner() public {
+  function propose(address _subject, bytes memory _msgData) onlyOwner() public {
     require(size < 5);
     proposals[first + size] = Proposal(_subject, uint32(now), false, _msgData);
     emit NewProposal(first + size, _subject, _msgData);
@@ -45,15 +45,21 @@ contract MinGov is Ownable {
     Proposal storage prop = proposals[_proposalId];
     require(prop.created > 0);
     require(prop.canceled == false);
-    prop .canceled = true;
+    prop.canceled = true;
   }
   
   function finalize() public {
     for (uint256 i = first; i < first + size; i++) {
       Proposal memory prop = proposals[i];
       if (prop.created + proposalTime <= now) {
-        if (!prop.canceled && prop.subject.call(prop.msgData)) {
-         emit Execution(i, prop.subject, prop.msgData);
+        if (!prop.canceled) {
+          bool rv;
+          // use this for 0.5
+          // (rv, ) = prop.subject.call(prop.msgData);
+          rv = prop.subject.call(prop.msgData);
+          if (rv) {
+            emit Execution(i, prop.subject, prop.msgData);
+          }
         }
         delete proposals[i];
         first++;
