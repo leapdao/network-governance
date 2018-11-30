@@ -1,3 +1,11 @@
+
+/**
+ * Copyright (c) 2018-present, Leap DAO (leapdao.org)
+ *
+ * This source code is licensed under the Mozilla Public License, version 2,
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
@@ -38,8 +46,6 @@ contract MinGov is Ownable {
             if (prop.created + proposalTime <= now) {
                 if (prop.subject.call(prop.msgData)) {
                    emit Execution(i, prop.subject, prop.msgData);
-                } else {
-                    throw;
                 }
                 delete proposals[i];
                 first++;

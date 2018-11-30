@@ -26,6 +26,13 @@ contract LeapBridge {
   bytes32 constant ownerKey = keccak256("some random key for owner");
 
   /**
+   * @return the address of the owner.
+   */
+  function owner() public view returns (address) {
+      return upgradeStore[ownerKey];
+  }
+
+  /**
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {

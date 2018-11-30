@@ -74,7 +74,7 @@ contract('MinGov', (accounts) => {
     assert.equal(size.toNumber(), 0);
   });
 
-  it('should allow to do upgrade', async () => {
+  it('should allow to upgrade bridge', async () => {
     // deploy new contract
     const proxy = Proxy.at(bridge.address);
     const newBridgeLogic = await LeapBridge.new();
@@ -87,6 +87,18 @@ contract('MinGov', (accounts) => {
     // check value after
     const logicAddr = await proxy.logic();
     assert.equal(logicAddr, newBridgeLogic.address);
+  });
+
+  it('should allow to upgrade governance', async () => {
+
+    // propose and finalize upgrade
+    const data = await bridge.contract.transferOwnership.getData(accounts[1]);
+    await gov.propose(bridge.address, data);
+    await gov.finalize();
+
+    // check value after
+    const ownerAddr = await bridge.owner();
+    assert.equal(ownerAddr, accounts[1]);
   });
 
 });
