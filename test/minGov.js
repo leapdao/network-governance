@@ -147,7 +147,6 @@ contract('MinGov', (accounts) => {
   });
 
   it('should hold proposal for some time', async () => {
-
     await time.advanceBlock();
 
     const openingTime = await time.latest();
@@ -182,5 +181,20 @@ contract('MinGov', (accounts) => {
     operator = await bridge.operator();
     assert.equal(operator, accounts[1]);
   });
+
+  it('should allow to cancel proposal', async () => {
+    // check value before
+    let operator = await bridge.operator();
+    assert.equal(operator, '0x0000000000000000000000000000000000000000');
+    // propose and finalize value change
+    const data = await bridge.contract.setOperator.getData(accounts[1]);
+    await gov.propose(bridge.address, data);
+    await gov.cancel(1);
+    await gov.finalize();
+
+    // check value after
+    operator = await bridge.operator();
+    assert.equal(operator, '0x0000000000000000000000000000000000000000');
+  })
 
 });
