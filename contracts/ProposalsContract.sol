@@ -26,6 +26,7 @@ contract ProposalsContract {
 	}
 
 	struct Voting {
+		uint startedAt;
 		VotingType votingType;
 		uint param;
 		uint eventId;
@@ -61,6 +62,7 @@ contract ProposalsContract {
 	 */
 	function setExitStake(uint256 _exitStake) public onlyMultisigAddress {
 		Voting memory v;
+		v.startedAt = now;
 		v.votingType = VotingType.SetExitStake;
 		v.param = _exitStake;
 		v.eventId = token.startNewEvent();
@@ -79,6 +81,7 @@ contract ProposalsContract {
 	 */
 	function setEpochLength(uint _epochLength) public onlyMultisigAddress {
 		Voting memory v;
+		v.startedAt = now;
 		v.votingType = VotingType.SetEpochLength;
 		v.param = _epochLength;
 		v.eventId = token.startNewEvent();
@@ -126,6 +129,9 @@ contract ProposalsContract {
 	 */
 	function _isVotingFinished(uint _votingIndex) internal returns(bool isFin) {
 		require(_votingIndex<votings.length);
+		if((now - v[_votingIndex].startedAt) > 1000*3600*24*14) {
+			return true;
+		}
 
 		uint total = votings[_votingIndex].totalSupplyAtEvent;
 		uint votesSum = votings[_votingIndex].pro + votings[_votingIndex].versus;
