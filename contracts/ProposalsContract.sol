@@ -16,7 +16,7 @@ contract ProposalsContract {
 
 	uint public QUORUM_PERCENT = 80;
 	uint public CONSENSUS_PERCENT = 80;
-	uint daysAfter = 14;
+	uint daysToVote = 14;
 
 	event VotingStarted(string _type, uint _param, uint _totalSupplyAtEvent, uint _eventId, address _byWhom);
 	event VotingFinished();
@@ -131,7 +131,7 @@ contract ProposalsContract {
 	function _isVotingFinished(uint _votingIndex) internal returns(bool isFin) {
 		require(_votingIndex<votings.length);
 		uint start = votings[_votingIndex].startedAt;
-		if (now >= start + daysAfter * 1 days) {
+		if (now >= start + daysToVote * 1 days) {
 			return true;
 		}
 

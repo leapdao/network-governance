@@ -1,5 +1,5 @@
-import chai from 'chai';
-import util from 'ethereumjs-util';
+var chai = require('chai');
+var util = require('ethereumjs-util');
 const time = require('./helpers/time');
 
 const Bridge = artifacts.require('./mocks/Bridge.sol');
