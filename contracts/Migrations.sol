@@ -1,26 +1,34 @@
-pragma solidity ^0.4.4;
+
+/**
+ * Copyright (c) 2018-present, Leap DAO (leapdao.org)
+ *
+ * This source code is licensed under the Mozilla Public License, version 2,
+ * found in the LICENSE file in the root directory of this source tree.
+ */
+
+pragma solidity 0.4.24;
 
 
 contract Migrations {
-	address public owner;
-	uint public lastCompletedMigration;
+  address public owner;
+  uint256 public lastCompletedMigration;
 
-	modifier restricted() {
-		if (msg.sender == owner) {
-			_;
-		}
-	}
+  modifier restricted() {
+    if (msg.sender == owner) {
+      _;
+    }
+  }
 
-	constructor() public{
-		owner = msg.sender;
-	}
+  constructor() public {
+    owner = msg.sender;
+  }
 
-	function setCompleted(uint _completed) external restricted {
-		lastCompletedMigration = _completed;
-	}
+  function setCompleted(uint256 completed) public restricted {
+    lastCompletedMigration = completed;
+  }
 
-	function upgrade(address _newAddress) external restricted {
-		Migrations upgraded = Migrations(_newAddress);
-		upgraded.setCompleted(lastCompletedMigration);
-	}
-}
+  function upgrade(address newAddress) public restricted {
+    Migrations upgraded = Migrations(newAddress);
+    upgraded.setCompleted(lastCompletedMigration);
+  }
+ }
