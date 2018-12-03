@@ -137,7 +137,6 @@ contract ProposalsContract {
 	 */
 	function veto(uint _proposalIndex) public {
 		require(_proposalIndex<proposals.length);
-		require(!_isProposalFinished(_proposalIndex));
 		require(0!=token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender));
 		require(!proposals[_proposalIndex].voted[msg.sender]);
 
