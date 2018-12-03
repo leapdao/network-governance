@@ -10,34 +10,28 @@ import "./IBridgeContract.sol";
  * See https://github.com/leapdao/leap-contracts/blob/master/contracts/LeapBridge.sol
  */
 contract ProposalsContract {
-	IBridgeContract public bridge;
 	address public multisigAddress;
 	PreserveBalancesOnTransferToken public token;
 
-	uint public QUORUM_PERCENT = 80;
-	uint public CONSENSUS_PERCENT = 80;
+	uint public VETO_PERCENT = 30;
 	uint daysToVote = 14;
 
-	event VotingStarted(string _type, uint _param, uint _totalSupplyAtEvent, uint _eventId, address _byWhom);
-	event VotingFinished();
+	event ProposalStarted(address _target, bytes _data, uint _totalSupplyAtEvent, uint _eventId, address _byWhom);
+	event Execution(uint256 proposalId, address subject, bytes msgData);
+	event ProposalFinished();
 
-	enum VotingType {
-		SetExitStake,
-		SetEpochLength
-	}
-
-	struct Voting {
+	struct Proposal {
 		uint startedAt;
-		VotingType votingType;
-		uint param;
+		address target;
+		bytes data;
 		uint eventId;
-		uint pro;
-		uint versus;
+		uint vetoScore;
 		uint totalSupplyAtEvent;
 		mapping(address=>bool) voted;
+		bool isFinalized;
 	}
 
-	Voting[] votings;
+	Proposal[] proposals;
 
 	modifier onlyMultisigAddress() {
 		require(msg.sender==multisigAddress);
@@ -46,146 +40,114 @@ contract ProposalsContract {
 
 	/**
 	 * @notice _bridge SHOULD CALL transferOwnership() to THIS contract!
-	 * @param _bridge – address of the bridge contract (that we will control)
 	 * @param _token – address of the main DAO token
 	 * @param _multisigAddress – address of the mulitisig contract (that controls us)
 	 */
-	constructor(IBridgeContract _bridge, PreserveBalancesOnTransferToken _token, address _multisigAddress) public {
+	constructor(PreserveBalancesOnTransferToken _token, address _multisigAddress) public {
 		multisigAddress = _multisigAddress;
-		bridge = _bridge;
 		token = _token;
 	}
 
 	/**
-	 * @dev Propose the 'exitStake' parameter change
-	 * @notice This function creates voting
-	 * @param _exitStake – value of exitStake param
+	 * @dev Propose to change _paramType value to _param
+	 * @notice This function creates proposal
+	 * @param _target – target of call
+	 * @param _data – call data
 	 */
-	function setExitStake(uint256 _exitStake) public onlyMultisigAddress {
-		Voting memory v;
-		v.startedAt = now;
-		v.votingType = VotingType.SetExitStake;
-		v.param = _exitStake;
-		v.eventId = token.startNewEvent();
-		v.pro = 0;
-		v.versus = 0;
-		v.totalSupplyAtEvent = token.totalSupply();
-		votings.push(v);
-	
-		emit VotingStarted("setExitStake", _exitStake, v.totalSupplyAtEvent, v.eventId, msg.sender);
+	function propose(address _target, bytes _data) onlyMultisigAddress public {
+		Proposal memory p;
+		p.startedAt = now;
+		p.target = _target;
+		p.data = _data;
+		p.eventId = token.startNewEvent();
+		p.vetoScore = 0;
+		p.totalSupplyAtEvent = token.totalSupply();
+		proposals.push(p);	
+		emit ProposalStarted(_target, _data, p.totalSupplyAtEvent, p.eventId, msg.sender);	
 	}
 
 	/**
-	 * @dev Propose the 'epochLength' parameter change
-	 * @notice This function creates voting
-	 * @param _epochLength – value of epochLength param
-	 */
-	function setEpochLength(uint _epochLength) public onlyMultisigAddress {
-		Voting memory v;
-		v.startedAt = now;
-		v.votingType = VotingType.SetEpochLength;
-		v.param = _epochLength;
-		v.eventId = token.startNewEvent();
-		v.pro = 0;
-		v.versus = 0;
-		v.totalSupplyAtEvent = token.totalSupply();
-		votings.push(v);
-		
-		emit VotingStarted("setEpochLength", _epochLength, v.totalSupplyAtEvent, v.eventId, msg.sender);
-	}
-
-	/**
-	 * @dev Get ALL voting count 
+	 * @dev Get ALL proposal count 
 	 * @notice This function can be called by anyone
-	 * @return Voting count
+	 * @return Proposal count
 	 */
-	function getVotingsCount()public view returns(uint){
-		return votings.length;
+	function getProposalsCount()public view returns(uint){
+		return proposals.length;
 	}
 
 	/**
-	* @dev Get voting data
+	* @dev Get proposal data
 	 * @notice This function can be called by anyone
-	 * @param _votingIndex – voting number
-	 * @return votingType – what is this voting for
+	 * @param _proposalIndex – proposal number
+	 * @return paramType – what is this proposal for
 	 * @return paramValue – what is param amount
-	 * @return versus – sum of voters token amount, that voted no
+	 * @return vetoScore – sum of voters token amount, that voted no
 	 * @return isFinished – is Quorum reached
 	 * @return isResultYes – is voted yes >= 80%
 	 */
-	function getVotingStats(uint _votingIndex) public view returns(VotingType votingType, uint paramValue, uint pro, uint versus, bool isFinished, bool isResultYes) {
-		require(_votingIndex<votings.length);
-		votingType = votings[_votingIndex].votingType;
-		paramValue = votings[_votingIndex].param;		
-		pro = votings[_votingIndex].pro;
-		versus = votings[_votingIndex].versus;
-		isFinished = _isVotingFinished(_votingIndex);
-		isResultYes = _isVotingResultYes(_votingIndex);
+	function getProposalStats(uint _proposalIndex) public view returns(address target, bytes data, bytes32 paramValue, uint pro, uint vetoScore, bool isFinished, bool isVetoed) {
+		require(_proposalIndex<proposals.length);
+		target = proposals[_proposalIndex].target;
+		data = proposals[_proposalIndex].data;		
+		vetoScore = proposals[_proposalIndex].vetoScore;
+		isFinished = _isProposalFinished(_proposalIndex);
+		isVetoed = _isVetoed(_proposalIndex);
 	}
 
 	/**
-	 * @dev Is selected voting finished?
-	 * @param _votingIndex – voting number
-	 * @return is quorum reched or not
+	 * @dev Is selected proposal finished?
+	 * @param _proposalIndex – proposal number
+	 * @return is proposal finished or not
 	 */
-	function _isVotingFinished(uint _votingIndex) internal returns(bool isFin) {
-		require(_votingIndex<votings.length);
-		uint start = votings[_votingIndex].startedAt;
-		if (now >= start + daysToVote * 1 days) {
-			return true;
-		}
-
-		uint total = votings[_votingIndex].totalSupplyAtEvent;
-		uint votesSum = votings[_votingIndex].pro + votings[_votingIndex].versus;
-		isFin = (votesSum*100 >= total*QUORUM_PERCENT);
-	}
-
-	/**
-	 * @dev Is selected voting result is YES? 
-	 * @notice Not checking whether it is finished!
-	 * @param _votingIndex – voting number
-	 * @return is current result yes or not
-	 */
-	function _isVotingResultYes(uint _votingIndex) internal view returns(bool isYes) {
-		require(_votingIndex<votings.length);
-		if(votings[_votingIndex].versus==votings[_votingIndex].pro) {
-			isYes = false;
-		} else {
-			isYes = (CONSENSUS_PERCENT*votings[_votingIndex].versus <= ((100-CONSENSUS_PERCENT)*votings[_votingIndex].pro));
+	function _isProposalFinished(uint _proposalIndex) internal view returns(bool isIt) {
+		require(_proposalIndex<proposals.length);
+		if ((now >= proposals[_proposalIndex].startedAt + daysToVote * 1 days)|| _isVetoed(_proposalIndex)) {
+			isIt = true;
 		}
 	}
-	
-	/**
-	 * @dev Vote YES or NO
-	 * @param _votingIndex – voting number
-	 * @param _isYes – voters opinion
-	 */
-	function vote(uint _votingIndex, bool _isYes) public {
-		require(_votingIndex<votings.length);
-		require(!_isVotingFinished(_votingIndex));
-		require(0!=token.getBalanceAtEventStart(votings[_votingIndex].eventId, msg.sender));
-		require(!votings[_votingIndex].voted[msg.sender]);
 
-		votings[_votingIndex].voted[msg.sender] = true;
+	/**
+	 * @dev Is selected proposal finished?
+	 * @param _proposalIndex – proposal number
+	 * @return is proposal vetoed or not
+	 */	
+	function _isVetoed(uint _proposalIndex) internal view returns(bool isIt) {
+		if(proposals[_proposalIndex].vetoScore*100 >= proposals[_proposalIndex].totalSupplyAtEvent*VETO_PERCENT) {
+			isIt = true;
+		}
+	}
+
+	function finalize(uint _proposalIndex) public {
+		require(!proposals[_proposalIndex].isFinalized);
+		require(_isProposalFinished(_proposalIndex));
+
+		proposals[_proposalIndex].isFinalized = true;
+		if(!_isVetoed(_proposalIndex)) {
+			emit ProposalFinished();
+			bool rv = proposals[_proposalIndex].target.call(proposals[_proposalIndex].data);
+			if (rv) {
+				emit Execution(_proposalIndex, proposals[_proposalIndex].target, proposals[_proposalIndex].data);
+			}			
+		}
+	}
+
+	/**
+	 * @dev veto proposal with index _proposalIndex
+	 * @param _proposalIndex – proposal number
+	 */
+	function veto(uint _proposalIndex) public {
+		require(_proposalIndex<proposals.length);
+		require(!_isProposalFinished(_proposalIndex));
+		require(0!=token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender));
+		require(!proposals[_proposalIndex].voted[msg.sender]);
+
+		proposals[_proposalIndex].voted[msg.sender] = true;
 
 		// 1 - recalculate stats
-		if(_isYes){
-			votings[_votingIndex].pro += token.getBalanceAtEventStart(votings[_votingIndex].eventId, msg.sender);
-		}else{
-			votings[_votingIndex].versus += token.getBalanceAtEventStart(votings[_votingIndex].eventId, msg.sender);
-		}
+		proposals[_proposalIndex].vetoScore += token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender);
 		
-		// 2 - if voting is finished (last caller) AND the result is YES -> call the target method 
-		if(_isVotingFinished(_votingIndex) && _isVotingResultYes(_votingIndex)){
-			emit VotingFinished();
- 
-			if(votings[_votingIndex].votingType==VotingType.SetExitStake){
-				bridge.setExitStake(votings[_votingIndex].param);
-			}else if(votings[_votingIndex].votingType==VotingType.SetEpochLength) {
-				bridge.setEpochLength(votings[_votingIndex].param);		
-			}
-
-			token.finishEvent(votings[_votingIndex].eventId);
+		if(_isProposalFinished(_proposalIndex)) {
+			finalize(_proposalIndex);
 		}
 	}
 }

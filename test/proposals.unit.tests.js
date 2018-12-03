@@ -2,15 +2,6 @@ var BridgeTestable= artifacts.require("./BridgeTestable");
 var ProposalsContract = artifacts.require("./ProposalsContract");
 var PreserveBalancesOnTransferToken = artifacts.require("./PreserveBalancesOnTransferToken");
 
-async function passHours (hours) {
-	await web3.currentProvider.sendAsync({
-		jsonrpc: '2.0',
-		method: 'evm_increaseTime',
-		params: [3600 * hours * 1000],
-		id: new Date().getTime(),
-	}, function (err) { if (err) console.log('err:', err); });
-}
-
 require('chai')
 	.use(require('chai-as-promised'))
 	.use(require('chai-bignumber')(web3.BigNumber))

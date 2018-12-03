@@ -1,16 +1,8 @@
 var BridgeTestable= artifacts.require("./BridgeTestable");
 var ProposalsContract = artifacts.require("./ProposalsContract");
 var PreserveBalancesOnTransferToken = artifacts.require("./PreserveBalancesOnTransferToken");
-
-async function passHours (hours) {
-	await web3.currentProvider.sendAsync({
-		jsonrpc: '2.0',
-		method: 'evm_increaseTime',
-		params: [3600 * hours * 1000],
-		id: new Date().getTime(),
-	}, function (err) { if (err) console.log('err:', err); });
-}
-
+var util = require('ethereumjs-util');
+const time = require('./helpers/time');
 
 require('chai')
 	.use(require('chai-as-promised'))
@@ -39,23 +31,20 @@ contract('ProposalsContract', (accounts) => {
 			await preserveBalancesOnTransferToken.mint(u4, 1e18);			
 
 			bridgeTestable = await BridgeTestable.new();
-			proposalsContract = await ProposalsContract.new(bridgeTestable.address, preserveBalancesOnTransferToken.address, creator);
+			proposalsContract = await ProposalsContract.new(preserveBalancesOnTransferToken.address, creator);
 
 			await preserveBalancesOnTransferToken.transferOwnership(proposalsContract.address);
 			await bridgeTestable.transferOwnership(proposalsContract.address);
-			await passHours(24);
+			await time.increase(time.duration.days(1));
 
-			await proposalsContract.setEpochLength(500, {from:creator});
-			await passHours(24);
-
+			const data = await bridgeTestable.contract.setEpochLength.getData(500);
+			await proposalsContract.propose(bridgeTestable.address, data);
+			
 			var EL1 = await bridgeTestable.epochLength();
 			assert.equal(EL1.toNumber(), 0);
 
-			await passHours(24);
-			await proposalsContract.vote(0, true, {from:u1});
-			await proposalsContract.vote(0, true, {from:u2});
-			await proposalsContract.vote(0, true, {from:u3});
-			await proposalsContract.vote(0, true, {from:u4})
+			await time.increase(time.duration.days(14));
+			await proposalsContract.finalize(0);
 			var EL2 = await bridgeTestable.epochLength();
 			assert.equal(EL2.toNumber(), 500);
 		});

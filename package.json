@@ -27,8 +27,7 @@
 		"url": "https://github.com/leapdao/governance-utilities"
 	},
 	"homepage": "https://leapdao.org",
-	"dependencies": {
-		"@thetta/core": "^1.4.1",
+	"devDependencies": {
 		"babel-cli": "^6.26.0",
 		"babel-eslint": "^8.2.6",
 		"babel-polyfill": "^6.26.0",
@@ -40,7 +39,6 @@
 		"chai-bignumber": "2.0.2",
 		"coveralls": "^3.0.2",
 		"docusaurus-init": "^1.0.2",
-		"dotenv": "^4.0.0",
 		"eslint": "^5.4.0",
 		"eslint-config-airbnb-base": "^13.1.0",
 		"eslint-config-prettier": "^3.1.0",
@@ -54,12 +52,18 @@
 		"ganache-cli": "^6.1.8",
 		"growl": "^1.10.5",
 		"install": "^0.12.1",
-		"openzeppelin-solidity": "^2.0.0",
 		"solc": "^0.4.24",
 		"solidity-coverage": "^0.5.7",
 		"solidity-docgen": "^0.1.0",
 		"solium": "^1.1.8",
-		"truffle": "^4.1.14",
-		"truffle-hdwallet-provider": "0.0.5"
+		"truffle": "^4.1.14"
+	},
+	"dependencies": {
+		"@thetta/core": "^1.4.1",
+		"pify": "^4.0.1",
+		"dotenv": "^4.0.0",
+		"openzeppelin-solidity": "^2.0.0",
+		"truffle-hdwallet-provider": "0.0.5",
+		"cross-env": "^5.1.3"
 	}
 }
