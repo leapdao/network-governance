@@ -27,14 +27,10 @@ contract AdminableProxy is AdminUpgradeabilityProxy {
   }
 
   /**
-   * @dev fallback implementation.
-   * Extracted to enable manual triggering.
+   * @dev apply proposal.
    */
-  function _fallback() internal {
-  	// TODO: find a way to prevent backdooring according to
-  	// https://medium.com/nomic-labs-blog/malicious-backdoors-in-ethereum-proxies-62629adf3357
-  	// _willFallback();
-    _delegate(_implementation());
+  function applyProposal(bytes data) external ifAdmin returns (bool) {
+    return _implementation().delegatecall(data);
   }
 
 }

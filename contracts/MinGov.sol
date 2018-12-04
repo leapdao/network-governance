@@ -9,6 +9,7 @@
 pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./AdminableProxy.sol";
 
 contract MinGov is Ownable {
   
@@ -47,6 +48,10 @@ contract MinGov is Ownable {
     require(prop.canceled == false);
     prop.canceled = true;
   }
+
+  function getSig(bytes _msgData) internal pure returns (bytes4) {
+    return bytes4(_msgData[3]) >> 24 | bytes4(_msgData[2]) >> 16 | bytes4(_msgData[1]) >> 8 | bytes4(_msgData[0]);
+  }
   
   function finalize() public {
     for (uint256 i = first; i < first + size; i++) {
@@ -54,9 +59,19 @@ contract MinGov is Ownable {
       if (prop.created + proposalTime <= now) {
         if (!prop.canceled) {
           bool rv;
-          // use this for 0.5
-          // (rv, ) = prop.subject.call(prop.msgData);
-          rv = prop.subject.call(prop.msgData);
+          if (
+            // changeAdmin(address)
+            getSig(prop.msgData) == 0x8f283970 || 
+            // upgradeTo(address)
+            getSig(prop.msgData) == 0x3659cfe6) {
+            // this changes proxy parameters 
+            rv = prop.subject.call(prop.msgData);
+            // use this for 0.5
+            // (rv, ) = prop.subject.call(prop.msgData);
+          } else {
+            // this changes governance parameters to the implementation
+            rv = AdminableProxy(prop.subject).applyProposal(prop.msgData);
+          }
           if (rv) {
             emit Execution(i, prop.subject, prop.msgData);
           }
