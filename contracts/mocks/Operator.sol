@@ -8,9 +8,9 @@
 
 pragma solidity 0.4.24;
 
-import "./Initializable.sol";
+import "./Adminable.sol";
 
-contract Operator is Initializable {
+contract Operator is Adminable {
   uint256 public minGasPrice;
   uint256 public epochLength;
   uint256 public parentBlockInterval;

@@ -48,6 +48,7 @@
     "dotenv": "^4.0.0",
     "openzeppelin-solidity": "1.12.0",
     "pify": "^4.0.1",
-    "truffle-hdwallet-provider": "0.0.5"
+    "truffle-hdwallet-provider": "0.0.5",
+    "zos-lib": "^2.0.1"
   }
 }

@@ -5,7 +5,7 @@ const time = require('./helpers/time');
 const Bridge = artifacts.require('./mocks/Bridge.sol');
 const Operator = artifacts.require('./mocks/Operator.sol');
 const Vault = artifacts.require('./mocks/Vault.sol');
-const AdminUpgradeabilityProxy = artifacts.require('./AdminUpgradeabilityProxy.sol');
+const AdminableProxy = artifacts.require('./AdminableProxy.sol');
 const MinGov = artifacts.require('./MinGov.sol');
 
 chai.use(require('chai-as-promised')).should();
@@ -19,7 +19,7 @@ contract('MinGov', (accounts) => {
     gov = await MinGov.new(0);
     // bridge
     const bridgeLogic = await Bridge.new();
-    const proxy = await AdminUpgradeabilityProxy.new(bridgeLogic.address, 0);
+    const proxy = await AdminableProxy.new(bridgeLogic.address, 0);
     bridge = Bridge.at(proxy.address);
     await bridge.changeAdmin(gov.address);
   });
@@ -41,7 +41,7 @@ contract('MinGov', (accounts) => {
   it('should allow to propose and finalize multiple operations', async () => {
     // operator
     const operatorLogic = await Operator.new();
-    const proxyOp = await AdminUpgradeabilityProxy.new(operatorLogic.address, 0);
+    const proxyOp = await AdminableProxy.new(operatorLogic.address, 0);
     // await proxyOp.initialize(operatorLogic.address);
     const operator = Operator.at(proxyOp.address);
     await operator.changeAdmin(gov.address);
@@ -87,7 +87,7 @@ contract('MinGov', (accounts) => {
   it('should allow to finalize same operation multiple times', async () => {
     // vault
     const vaultLogic = await Vault.new();
-    const proxyVa = await AdminUpgradeabilityProxy.new(vaultLogic.address, 0);
+    const proxyVa = await AdminableProxy.new(vaultLogic.address, 0);
     // await proxyVa.initialize(vaultLogic.address);
     const vault = Vault.at(proxyVa.address);
     await vault.changeAdmin(gov.address);
@@ -120,7 +120,7 @@ contract('MinGov', (accounts) => {
 
   it('should allow to upgrade bridge', async () => {
     // deploy new contract
-    const proxy = AdminUpgradeabilityProxy.at(bridge.address);
+    const proxy = AdminableProxy.at(bridge.address);
     const newBridgeLogic = await Bridge.new();
 
     // propose and finalize upgrade
@@ -129,7 +129,8 @@ contract('MinGov', (accounts) => {
     await gov.finalize();
 
     // check value after
-    const logicAddr = await proxy.implementation();
+    const imp = '0x7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c3';
+    const logicAddr = await web3.eth.getStorageAt(proxy.address, imp);
     assert.equal(logicAddr, newBridgeLogic.address);
   });
 
@@ -155,7 +156,7 @@ contract('MinGov', (accounts) => {
     gov = await MinGov.new(time.duration.weeks(2));
     // bridge
     const bridgeLogic = await Bridge.new();
-    const proxy = await AdminUpgradeabilityProxy.new(bridgeLogic.address, 0);
+    const proxy = await AdminableProxy.new(bridgeLogic.address, 0);
     // await proxy.initialize(bridgeLogic.address);
     bridge = Bridge.at(proxy.address);
     await bridge.changeAdmin(gov.address);

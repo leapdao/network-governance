@@ -8,16 +8,12 @@
 
 pragma solidity 0.4.24;
 
-import "./Initializable.sol";
+import "./Adminable.sol";
 
-contract Bridge is Initializable {
+contract Bridge is Adminable {
   address public operator;
 
   function setOperator(address _operator) public ifAdmin {
     operator = _operator;
-  }
-
-  function admin() public view returns (address) {
-  	return _admin();
   }
 }
