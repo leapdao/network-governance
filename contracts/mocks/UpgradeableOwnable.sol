@@ -11,7 +11,8 @@ pragma solidity 0.4.24;
 
 contract UpgradeableOwnable {
   mapping (bytes32 => address) upgradeStore;
-  bytes32 constant ownerKey = keccak256("some random key for owner");
+  // keccak256("org.leapdao.proxy.ownerAddr");
+  bytes32 constant ownerKey = 0xfe2c13e96b9e768f0a0d627bedc53ba66342556bfc6426d5cb693df598dcc3fb;
 
   /**
    * @return the address of the owner.

@@ -13,8 +13,10 @@ pragma solidity ^0.4.24;
  * Basic proxy implementation to controller
  */
 contract Proxy {
-  bytes32 constant ownerKey = keccak256("some random key for owner");
-  bytes32 constant logicKey = keccak256("some random key for logic");
+  // keccak256("org.leapdao.proxy.ownerAddr");
+  bytes32 constant ownerKey = 0xfe2c13e96b9e768f0a0d627bedc53ba66342556bfc6426d5cb693df598dcc3fb;
+  // keccak256("org.leapdao.proxy.logicAddr");
+  bytes32 constant logicKey = 0x3ea85b8efcc45787f89f7d3de80653ae6beddd6dbeed03a8736f1e9b93ffa5fb;
   mapping (bytes32 => address) upgradeStore;
 
   /**
@@ -85,17 +87,6 @@ contract Proxy {
   }
 
   /**
-   * @dev Allows the current owner to relinquish control of the contract.
-   * @notice Renouncing to ownership will leave the contract without an owner.
-   * It will not be possible to call the functions with the `onlyOwner`
-   * modifier anymore.
-   */
-  function renounceOwnership() public onlyOwner {
-      emit OwnershipTransferred(upgradeStore[ownerKey], address(0));
-      upgradeStore[ownerKey] = address(0);
-  }
-
-  /**
    * @dev Allows the current owner to transfer control of the contract to a newOwner.
    * @param _newOwner The address to transfer ownership to.
    */
@@ -116,21 +107,28 @@ contract Proxy {
   // CATCHALL
 
   /**
-   * @dev Function to invoke all function that are implemented in controler
+   * @dev Function to invoke all function that are implemented in logic
    */
-  function () public {
+  function () payable public {
     address logicAddr = upgradeStore[logicKey];
 
     assembly {
-      let ptr := mload(0x40)
-      calldatacopy(ptr, 0, calldatasize)
-      let result := delegatecall(gas, logicAddr, ptr, calldatasize, 0, 0)
-      let size := returndatasize
-      returndatacopy(ptr, 0, size)
+      // Copy msg.data. We take full control of memory in this inline assembly
+      // block because it will not return to Solidity code. We overwrite the
+      // Solidity scratch pad at memory position 0.
+      calldatacopy(0, 0, calldatasize)
+
+      // Call the implementation.
+      // out and outsize are 0 because we don't know the size yet.
+      let result := delegatecall(gas, logicAddr, 0, calldatasize, 0, 0)
+
+      // Copy the returned data.
+      returndatacopy(0, 0, returndatasize)
 
       switch result
-      case 0 { revert(ptr, size) }
-      default { return(ptr, size) }
+      // delegatecall returns 0 on error.
+      case 0 { revert(0, returndatasize) }
+      default { return(0, returndatasize) }
     }
   }
 
