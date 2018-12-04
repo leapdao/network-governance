@@ -8,22 +8,22 @@
 
 pragma solidity 0.4.24;
 
-import "./UpgradeableOwnable.sol";
+import "./Initializable.sol";
 
-contract Operator is UpgradeableOwnable {
+contract Operator is Initializable {
   uint256 public minGasPrice;
   uint256 public epochLength;
   uint256 public parentBlockInterval;
 
-  function setMinGasPrice(uint256 _minGasPrice) public onlyOwner {
+  function setMinGasPrice(uint256 _minGasPrice) public ifAdmin {
     minGasPrice = _minGasPrice;
   }
 
-  function setEpochLength(uint256 _epochLength) public onlyOwner {
+  function setEpochLength(uint256 _epochLength) public ifAdmin {
     epochLength = _epochLength;
   }
 
-  function setParentBlockInterval(uint256 _parentBlockInterval) public onlyOwner {
+  function setParentBlockInterval(uint256 _parentBlockInterval) public ifAdmin {
     parentBlockInterval = _parentBlockInterval;
   }
 

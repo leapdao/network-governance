@@ -8,17 +8,17 @@
 
 pragma solidity 0.4.24;
 
-import "./UpgradeableOwnable.sol";
+import "./Initializable.sol";
 
-contract Vault is UpgradeableOwnable {
+contract Vault is Initializable {
   uint256 public exitStake;
   uint256 public tokenCount;
 
-  function setExitStake(uint256 _exitStake) public onlyOwner {
+  function setExitStake(uint256 _exitStake) public ifAdmin {
     exitStake = _exitStake;
   }
 
-  function registerToken(address) public onlyOwner {
+  function registerToken(address) public ifAdmin {
     tokenCount++;
   }
 }

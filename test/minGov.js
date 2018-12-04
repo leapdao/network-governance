@@ -5,7 +5,7 @@ const time = require('./helpers/time');
 const Bridge = artifacts.require('./mocks/Bridge.sol');
 const Operator = artifacts.require('./mocks/Operator.sol');
 const Vault = artifacts.require('./mocks/Vault.sol');
-const Proxy = artifacts.require('./Proxy.sol');
+const AdminUpgradeabilityProxy = artifacts.require('./AdminUpgradeabilityProxy.sol');
 const MinGov = artifacts.require('./MinGov.sol');
 
 chai.use(require('chai-as-promised')).should();
@@ -19,10 +19,9 @@ contract('MinGov', (accounts) => {
     gov = await MinGov.new(0);
     // bridge
     const bridgeLogic = await Bridge.new();
-    const proxy = await Proxy.new();
-    await proxy.initialize(bridgeLogic.address);
+    const proxy = await AdminUpgradeabilityProxy.new(bridgeLogic.address, 0);
     bridge = Bridge.at(proxy.address);
-    await bridge.transferOwnership(gov.address);
+    await bridge.changeAdmin(gov.address);
   });
 
   it('should allow to propose and finalize one operation', async () => {
@@ -42,10 +41,10 @@ contract('MinGov', (accounts) => {
   it('should allow to propose and finalize multiple operations', async () => {
     // operator
     const operatorLogic = await Operator.new();
-    const proxyOp = await Proxy.new();
-    await proxyOp.initialize(operatorLogic.address);
+    const proxyOp = await AdminUpgradeabilityProxy.new(operatorLogic.address, 0);
+    // await proxyOp.initialize(operatorLogic.address);
     const operator = Operator.at(proxyOp.address);
-    await operator.transferOwnership(gov.address);
+    await operator.changeAdmin(gov.address);
 
     // propose and finalize value changes
     const data1 = await operator.contract.setMinGasPrice.getData(200);
@@ -88,10 +87,10 @@ contract('MinGov', (accounts) => {
   it('should allow to finalize same operation multiple times', async () => {
     // vault
     const vaultLogic = await Vault.new();
-    const proxyVa = await Proxy.new();
-    await proxyVa.initialize(vaultLogic.address);
+    const proxyVa = await AdminUpgradeabilityProxy.new(vaultLogic.address, 0);
+    // await proxyVa.initialize(vaultLogic.address);
     const vault = Vault.at(proxyVa.address);
-    await vault.transferOwnership(gov.address);
+    await vault.changeAdmin(gov.address);
 
     // propose and finalize value change
     const data = await vault.contract.registerToken.getData(accounts[1]);
@@ -121,28 +120,28 @@ contract('MinGov', (accounts) => {
 
   it('should allow to upgrade bridge', async () => {
     // deploy new contract
-    const proxy = Proxy.at(bridge.address);
+    const proxy = AdminUpgradeabilityProxy.at(bridge.address);
     const newBridgeLogic = await Bridge.new();
 
     // propose and finalize upgrade
-    const data = await proxy.contract.transferLogic.getData(newBridgeLogic.address);
+    const data = await proxy.contract.upgradeTo.getData(newBridgeLogic.address);
     await gov.propose(bridge.address, data);
     await gov.finalize();
 
     // check value after
-    const logicAddr = await proxy.logic();
+    const logicAddr = await proxy.implementation();
     assert.equal(logicAddr, newBridgeLogic.address);
   });
 
   it('should allow to transfer into new governance', async () => {
 
     // propose and finalize upgrade
-    const data = await bridge.contract.transferOwnership.getData(accounts[1]);
+    const data = await bridge.contract.changeAdmin.getData(accounts[1]);
     await gov.propose(bridge.address, data);
     await gov.finalize();
 
     // check value after
-    const ownerAddr = await bridge.owner();
+    const ownerAddr = await bridge.admin();
     assert.equal(ownerAddr, accounts[1]);
   });
 
@@ -156,10 +155,10 @@ contract('MinGov', (accounts) => {
     gov = await MinGov.new(time.duration.weeks(2));
     // bridge
     const bridgeLogic = await Bridge.new();
-    const proxy = await Proxy.new();
-    await proxy.initialize(bridgeLogic.address);
+    const proxy = await AdminUpgradeabilityProxy.new(bridgeLogic.address, 0);
+    // await proxy.initialize(bridgeLogic.address);
     bridge = Bridge.at(proxy.address);
-    await bridge.transferOwnership(gov.address);
+    await bridge.changeAdmin(gov.address);
 
     // check value before
     let operator = await bridge.operator();

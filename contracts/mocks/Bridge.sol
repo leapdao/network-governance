@@ -8,12 +8,16 @@
 
 pragma solidity 0.4.24;
 
-import "./UpgradeableOwnable.sol";
+import "./Initializable.sol";
 
-contract Bridge is UpgradeableOwnable {
+contract Bridge is Initializable {
   address public operator;
 
-  function setOperator(address _operator) public onlyOwner {
+  function setOperator(address _operator) public ifAdmin {
     operator = _operator;
+  }
+
+  function admin() public view returns (address) {
+  	return _admin();
   }
 }
