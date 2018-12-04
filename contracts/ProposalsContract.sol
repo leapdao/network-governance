@@ -87,6 +87,7 @@ contract ProposalsContract {
 	 */
 	function getProposalStats(uint _proposalIndex) public view returns(address target, bytes data, bytes32 paramValue, uint pro, uint vetoScore, bool isFinished, bool isVetoed) {
 		require(_proposalIndex<proposals.length);
+		
 		target = proposals[_proposalIndex].target;
 		data = proposals[_proposalIndex].data;		
 		vetoScore = proposals[_proposalIndex].vetoScore;
@@ -101,7 +102,9 @@ contract ProposalsContract {
 	 */
 	function _isProposalFinished(uint _proposalIndex) internal view returns(bool isIt) {
 		require(_proposalIndex<proposals.length);
-		if ((now >= proposals[_proposalIndex].startedAt + daysToVote * 1 days)|| _isVetoed(_proposalIndex)) {
+		
+		if (((now) >= (proposals[_proposalIndex].startedAt + daysToVote * 1 days)) || 
+			(_isVetoed(_proposalIndex))) {
 			isIt = true;
 		}
 	}
@@ -112,7 +115,7 @@ contract ProposalsContract {
 	 * @return is proposal vetoed or not
 	 */	
 	function _isVetoed(uint _proposalIndex) internal view returns(bool isIt) {
-		if(proposals[_proposalIndex].vetoScore*100 >= proposals[_proposalIndex].totalSupplyAtEvent*VETO_PERCENT) {
+		if((proposals[_proposalIndex].vetoScore*100) >= (proposals[_proposalIndex].totalSupplyAtEvent*VETO_PERCENT)) {
 			isIt = true;
 		}
 	}
