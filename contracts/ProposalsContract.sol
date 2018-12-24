@@ -70,7 +70,7 @@ contract ProposalsContract {
 	 * @notice This function can be called by anyone
 	 * @return Proposal count
 	 */
-	function getProposalsCount()public view returns(uint){
+	function getProposalsCount() public view returns(uint) {
 		return proposals.length;
 	}
 
