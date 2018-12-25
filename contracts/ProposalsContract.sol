@@ -78,11 +78,13 @@ contract ProposalsContract {
 	* @dev Get proposal data
 	 * @notice This function can be called by anyone
 	 * @param _proposalIndex – proposal number
-	 * @return paramType – what is this proposal for
+	 * @return target – address of a contract with the function, that will be called if proposal will be accepted
+	 * @return data – data of the function, that will be called if proposal will be accepted
 	 * @return paramValue – what is param amount
+	 * @return pro – sum of voters token amount, that voted yes
 	 * @return vetoScore – sum of voters token amount, that voted no
 	 * @return isFinished – is Quorum reached
-	 * @return isResultYes – is voted yes >= 80%
+	 * @return isVetoed – is veto percent > 30
 	 */
 	function getProposalStats(uint _proposalIndex) public view returns(address target, bytes data, bytes32 paramValue, uint pro, uint vetoScore, bool isFinished, bool isVetoed) {
 		require(_proposalIndex<proposals.length);
@@ -109,7 +111,7 @@ contract ProposalsContract {
 	}
 
 	/**
-	 * @dev Is selected proposal finished?
+	 * @dev Is selected proposal vetoed?
 	 * @param _proposalIndex – proposal number
 	 * @return is proposal vetoed or not
 	 */	
@@ -143,8 +145,6 @@ contract ProposalsContract {
 		require(!proposals[_proposalIndex].voted[msg.sender]);
 
 		proposals[_proposalIndex].voted[msg.sender] = true;
-
-		// 1 - recalculate stats
 		proposals[_proposalIndex].vetoScore += token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender);
 		
 		if(_isProposalFinished(_proposalIndex)) {

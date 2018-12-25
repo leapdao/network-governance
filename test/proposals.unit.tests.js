@@ -316,7 +316,7 @@ contract('ProposalsContract unit tests', (accounts) => {
 			var stats = await proposalsContract.getProposalStats(1).should.be.rejectedWith('revert');
 		});		
 
-		it('Should get proposalStats',async() => {
+		it('Should get proposalStats for 2 proposals',async() => {
 			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
 			await proposalsContract.propose(bridgeTestable.address, data);
 			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
