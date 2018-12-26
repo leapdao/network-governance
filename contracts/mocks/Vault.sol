@@ -10,6 +10,7 @@ pragma solidity 0.4.24;
 
 import "./Adminable.sol";
 
+
 contract Vault is Adminable {
   uint256 public exitStake;
   uint256 public tokenCount;

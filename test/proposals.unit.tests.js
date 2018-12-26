@@ -21,9 +21,6 @@ contract('ProposalsContract unit tests', (accounts) => {
 	var proposalsContract;
 	var preserveBalancesOnTransferToken;
 
-	var EXIT_STAKE = 0;
-	var EPOCH_LENGTH = 1;	
-
 	var stats;
 	var proposalType;
 	var paramValue;
@@ -156,6 +153,14 @@ contract('ProposalsContract unit tests', (accounts) => {
 			var EL2 = await bridgeTestable.exitStake();
 			assert.equal(EL2.toNumber(), 1e15);
 		});
+
+		it('Should revert if already finished',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await time.increase(time.duration.days(14));
+			await proposalsContract.finalize(0);
+			await proposalsContract.finalize(0).should.be.rejectedWith('revert'); 
+		});		
 	});
 
 	describe('EpochLength calls', function(){
@@ -232,6 +237,8 @@ contract('ProposalsContract unit tests', (accounts) => {
 			await proposalsContract.veto(0, {from:u1});
 			await proposalsContract.veto(0, {from:u2});
 			await time.increase(time.duration.days(14));
+			var data = await proposalsContract.getProposalStats(0);
+			assert.equal(data[5], true); //finilezed
 			var EL2 = await bridgeTestable.epochLength();
 			assert.equal(EL2.toNumber(), 0);
 		});
@@ -244,6 +251,12 @@ contract('ProposalsContract unit tests', (accounts) => {
 			var EL2 = await bridgeTestable.epochLength();
 			assert.equal(EL2.toNumber(), 500);
 		});
+
+		it('Should not finalize if days is not passed',async() => {
+			var data = await bridgeTestable.contract.setEpochLength.getData(500);
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await proposalsContract.finalize(0).should.be.rejectedWith('revert');
+		});		
 	});
 
 	describe('getProposalsCount calls', function(){
@@ -324,6 +337,68 @@ contract('ProposalsContract unit tests', (accounts) => {
 			var stats = await proposalsContract.getProposalStats(1).should.be.fulfilled;
 		});				
 	});
-	// TODO: check differtent tokenHolders count
-	// TODO: chck revert if already finished
+	
+
+	describe('emergencyStop/continueAferEmergencyStop calls', function(){
+		beforeEach(async () => {
+			preserveBalancesOnTransferToken = await PreserveBalancesOnTransferToken.new();
+
+			await preserveBalancesOnTransferToken.mint(u1, 1e18);
+			await preserveBalancesOnTransferToken.mint(u2, 1e18);
+			await preserveBalancesOnTransferToken.mint(u3, 1e18);
+			await preserveBalancesOnTransferToken.mint(u4, 1e18);
+			await preserveBalancesOnTransferToken.mint(u5, 1e18);
+			
+			bridgeTestable = await BridgeTestable.new();
+			proposalsContract = await ProposalsContract.new(preserveBalancesOnTransferToken.address, creator);
+			await preserveBalancesOnTransferToken.transferOwnership(proposalsContract.address);
+			await bridgeTestable.transferOwnership(proposalsContract.address);
+		});
+
+		it('Should not create propose after emergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
+			await proposalsContract.emergencyStop();
+			await proposalsContract.propose(bridgeTestable.address, data).should.be.rejectedWith('revert');
+		});
+
+		it('Should not finalize after emergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await time.increase(time.duration.days(14));
+			await proposalsContract.emergencyStop();
+			await proposalsContract.finalize(0).should.be.rejectedWith('revert');
+		});	
+
+		it('Should not veto after emergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await proposalsContract.emergencyStop();
+			await proposalsContract.veto(0, {from:u1}).should.be.rejectedWith('revert');
+		});	
+
+		it('Should create propose after continueAferEmergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
+			await proposalsContract.emergencyStop();
+			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.propose(bridgeTestable.address, data).should.be.fulfilled;
+		});	
+
+		it('Should finalize after continueAferEmergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await time.increase(time.duration.days(14));
+			await proposalsContract.emergencyStop();
+			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.finalize(0).should.be.fulfilled;
+		});	
+
+		it('Should veto after continueAferEmergencyStop',async() => {
+			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
+			await proposalsContract.propose(bridgeTestable.address, data);
+			await proposalsContract.emergencyStop();
+			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.veto(0, {from:u1}).should.be.fulfilled;
+		});			
+
+	});
 });

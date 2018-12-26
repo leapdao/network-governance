@@ -10,6 +10,7 @@ pragma solidity 0.4.24;
 
 import "./Adminable.sol";
 
+
 contract Operator is Adminable {
   uint256 public minGasPrice;
   uint256 public epochLength;

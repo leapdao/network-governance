@@ -1,7 +1,7 @@
 const { ethGetBlock } = require('./web3');
 const { promisify } = require('util');
 
-function advanceBlock () {
+function advanceBlock() {
   return promisify(web3.currentProvider.sendAsync)({
     jsonrpc: '2.0',
     method: 'evm_mine',
@@ -9,13 +9,13 @@ function advanceBlock () {
 }
 
 // Returns the time of the last mined block in seconds
-async function latest () {
+async function latest() {
   const block = await ethGetBlock('latest');
   return block.timestamp;
 }
 
 // Increases ganache time by the passed duration in seconds
-async function increase (duration) {
+async function increase(duration) {
   if (duration < 0) throw Error(`Cannot increase time by a negative amount (${duration})`);
 
   await promisify(web3.currentProvider.sendAsync)({
@@ -34,7 +34,7 @@ async function increase (duration) {
  *
  * @param target time in seconds
  */
-async function increaseTo (target) {
+async function increaseTo(target) {
   const now = (await latest());
 
   if (target < now) throw Error(`Cannot increase current time (${now}) to a moment in the past (${target})`);
@@ -43,12 +43,12 @@ async function increaseTo (target) {
 }
 
 const duration = {
-  seconds: function (val) { return val; },
-  minutes: function (val) { return val * this.seconds(60); },
-  hours: function (val) { return val * this.minutes(60); },
-  days: function (val) { return val * this.hours(24); },
-  weeks: function (val) { return val * this.days(7); },
-  years: function (val) { return val * this.days(365); },
+  seconds(val) { return val; },
+  minutes(val) { return val * this.seconds(60); },
+  hours(val) { return val * this.minutes(60); },
+  days(val) { return val * this.hours(24); },
+  weeks(val) { return val * this.days(7); },
+  years(val) { return val * this.days(365); },
 };
 
 module.exports = {

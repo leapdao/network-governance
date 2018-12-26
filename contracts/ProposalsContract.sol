@@ -15,9 +15,13 @@ contract ProposalsContract {
 	uint public VETO_PERCENT = 30;
 	uint daysToVote = 14;
 
+	bool public stopped;
+
 	event ProposalStarted(address _target, bytes _data, uint _totalSupplyAtEvent, uint _eventId, address _byWhom);
 	event Execution(uint256 proposalId, address subject, bytes msgData);
-	event ProposalFinished();
+	event ProposalFinished(bool _isYes);
+	event EmergencyStop();
+	event ContinueAferEmergencyStop();
 
 	struct Proposal {
 		uint startedAt;
@@ -33,8 +37,13 @@ contract ProposalsContract {
 	Proposal[] proposals;
 
 	modifier onlyMultisigAddress() {
-		require(msg.sender==multisigAddress);
+		require(msg.sender==multisigAddress, "only multisigAddress");
 		_;
+	}
+
+	modifier ifNotStopped() {
+		require(!stopped);
+		_;		
 	}
 
 	/**
@@ -53,9 +62,9 @@ contract ProposalsContract {
 	 * @param _target – target of call
 	 * @param _data – call data
 	 */
-	function propose(address _target, bytes _data) onlyMultisigAddress public {
+	function propose(address _target, bytes _data) public onlyMultisigAddress ifNotStopped {
 		Proposal memory p;
-		p.startedAt = now;
+		p.startedAt = block.timestamp;
 		p.target = _target;
 		p.data = _data;
 		p.eventId = token.startNewEvent();
@@ -63,6 +72,24 @@ contract ProposalsContract {
 		p.totalSupplyAtEvent = token.totalSupply();
 		proposals.push(p);	
 		emit ProposalStarted(_target, _data, p.totalSupplyAtEvent, p.eventId, msg.sender);	
+	}
+
+	/**
+	 * @dev become immutable in a case of emergency situation
+	 * @notice This function can be called only by MultisigAddress
+	 */
+	function emergencyStop() public onlyMultisigAddress {
+		emit EmergencyStop();
+		stopped = true;
+	}
+
+	/**
+	 * @dev stop being immutable after emergency situation ends
+	 * @notice This function can be called only by MultisigAddress
+	 */
+	function continueAferEmergencyStop() public onlyMultisigAddress {
+		emit ContinueAferEmergencyStop();
+		stopped = false;
 	}
 
 	/**
@@ -86,8 +113,16 @@ contract ProposalsContract {
 	 * @return isFinished – is Quorum reached
 	 * @return isVetoed – is veto percent > 30
 	 */
-	function getProposalStats(uint _proposalIndex) public view returns(address target, bytes data, bytes32 paramValue, uint pro, uint vetoScore, bool isFinished, bool isVetoed) {
-		require(_proposalIndex<proposals.length);
+	function getProposalStats(uint _proposalIndex) public view 
+		returns(address target, 
+			bytes data, 
+			bytes32 paramValue, 
+			uint pro, 
+			uint vetoScore, 
+			bool isFinished, 
+			bool isVetoed) 
+	{
+		require(_proposalIndex < proposals.length, "proposal should exist");
 		
 		target = proposals[_proposalIndex].target;
 		data = proposals[_proposalIndex].data;		
@@ -102,9 +137,9 @@ contract ProposalsContract {
 	 * @return is proposal finished or not
 	 */
 	function _isProposalFinished(uint _proposalIndex) internal view returns(bool isIt) {
-		require(_proposalIndex<proposals.length);
+		require(_proposalIndex < proposals.length, "proposal should exist");
 		
-		if (((now) >= (proposals[_proposalIndex].startedAt + daysToVote * 1 days)) || 
+		if (((block.timestamp) >= (proposals[_proposalIndex].startedAt + daysToVote * 1 days)) || 
 			(_isVetoed(_proposalIndex))) {
 			isIt = true;
 		}
@@ -121,16 +156,18 @@ contract ProposalsContract {
 		}
 	}
 
-	function finalize(uint _proposalIndex) public {
-		require(!proposals[_proposalIndex].isFinalized);
-		require(_isProposalFinished(_proposalIndex));
+	function finalize(uint _proposalIndex) public ifNotStopped {
+		require(!proposals[_proposalIndex].isFinalized, "proposal should not be finalized");
+		require(_isProposalFinished(_proposalIndex), "proposal should be finished");
 
 		proposals[_proposalIndex].isFinalized = true;
 		if(!_isVetoed(_proposalIndex)) {
-			emit ProposalFinished();
 			bool rv = proposals[_proposalIndex].target.call(proposals[_proposalIndex].data);
 			if (rv) {
+				emit ProposalFinished(true);
 				emit Execution(_proposalIndex, proposals[_proposalIndex].target, proposals[_proposalIndex].data);
+			} else {
+				emit ProposalFinished(false);
 			}			
 		}
 	}
@@ -139,10 +176,11 @@ contract ProposalsContract {
 	 * @dev veto proposal with index _proposalIndex
 	 * @param _proposalIndex – proposal number
 	 */
-	function veto(uint _proposalIndex) public {
-		require(_proposalIndex < proposals.length);
-		require(0 != token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender));
-		require(!proposals[_proposalIndex].voted[msg.sender]);
+	function veto(uint _proposalIndex) public ifNotStopped {
+		require(_proposalIndex < proposals.length, "proposal should exist");
+		require(0 != token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender), 
+			"voter that refused should have tokens");
+		require(!proposals[_proposalIndex].voted[msg.sender], "voter should not vote twice");
 
 		proposals[_proposalIndex].voted[msg.sender] = true;
 		proposals[_proposalIndex].vetoScore += token.getBalanceAtEventStart(proposals[_proposalIndex].eventId, msg.sender);

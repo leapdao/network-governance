@@ -10,6 +10,7 @@ pragma solidity ^0.4.24;
 
 import "zos-lib/contracts/upgradeability/AdminUpgradeabilityProxy.sol";
 
+
 /**
  * @title AdminUpgradeabilityProxy
  * @dev This contract combines an upgradeability proxy with an authorization

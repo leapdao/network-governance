@@ -10,6 +10,7 @@ pragma solidity 0.4.24;
 
 import "./Adminable.sol";
 
+
 contract Bridge is Adminable {
   address public operator;
 

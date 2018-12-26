@@ -11,6 +11,7 @@ pragma solidity ^0.4.24;
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./AdminableProxy.sol";
 
+
 contract MinGov is Ownable {
   
   uint256 public proposalTime;
