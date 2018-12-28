@@ -21,7 +21,7 @@ contract ProposalsContract {
 	event Execution(uint256 proposalId, address subject, bytes msgData);
 	event ProposalFinished(bool _isYes);
 	event EmergencyStop();
-	event ContinueAferEmergencyStop();
+	event ContinueAfterEmergencyStop();
 
 	struct Proposal {
 		uint startedAt;
@@ -87,8 +87,8 @@ contract ProposalsContract {
 	 * @dev stop being immutable after emergency situation ends
 	 * @notice This function can be called only by MultisigAddress
 	 */
-	function continueAferEmergencyStop() public onlyMultisigAddress {
-		emit ContinueAferEmergencyStop();
+	function continueAfterEmergencyStop() public onlyMultisigAddress {
+		emit ContinueAfterEmergencyStop();
 		stopped = false;
 	}
 

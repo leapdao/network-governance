@@ -338,8 +338,7 @@ contract('ProposalsContract unit tests', (accounts) => {
 		});				
 	});
 	
-
-	describe('emergencyStop/continueAferEmergencyStop calls', function(){
+	describe('emergencyStop/continueAfterEmergencyStop calls', function(){
 		beforeEach(async () => {
 			preserveBalancesOnTransferToken = await PreserveBalancesOnTransferToken.new();
 
@@ -376,27 +375,27 @@ contract('ProposalsContract unit tests', (accounts) => {
 			await proposalsContract.veto(0, {from:u1}).should.be.rejectedWith('revert');
 		});	
 
-		it('Should create propose after continueAferEmergencyStop',async() => {
+		it('Should create propose after continueAfterEmergencyStop',async() => {
 			var data = await bridgeTestable.contract.setExitStake.getData(1e15);
 			await proposalsContract.emergencyStop();
-			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.continueAfterEmergencyStop();
 			await proposalsContract.propose(bridgeTestable.address, data).should.be.fulfilled;
 		});	
 
-		it('Should finalize after continueAferEmergencyStop',async() => {
+		it('Should finalize after continueAfterEmergencyStop',async() => {
 			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
 			await proposalsContract.propose(bridgeTestable.address, data);
 			await time.increase(time.duration.days(14));
 			await proposalsContract.emergencyStop();
-			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.continueAfterEmergencyStop();
 			await proposalsContract.finalize(0).should.be.fulfilled;
 		});	
 
-		it('Should veto after continueAferEmergencyStop',async() => {
+		it('Should veto after continueAfterEmergencyStop',async() => {
 			var data = await bridgeTestable.contract.setExitStake.getData(1e15);	
 			await proposalsContract.propose(bridgeTestable.address, data);
 			await proposalsContract.emergencyStop();
-			await proposalsContract.continueAferEmergencyStop();
+			await proposalsContract.continueAfterEmergencyStop();
 			await proposalsContract.veto(0, {from:u1}).should.be.fulfilled;
 		});			
 
